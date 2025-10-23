@@ -22,6 +22,8 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Package, Plus, Edit, Trash2, DollarSign, ShoppingCart, ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import DialogProducto from "./admin/dialog-producto"
+import { Categorias } from "@/config/app.interface"
 
 // Tipos
 interface Product {
@@ -40,7 +42,11 @@ interface Sale {
   items: number
   status: string
 }
-
+const initialCategories: Categorias[] = [
+  { id: "1", nombre: "Bebidas", descripcion: '', isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { id: "2", nombre: "Comida", descripcion: '', isActive: true, createdAt: new Date(), updatedAt: new Date() },
+  { id: "3", nombre: "Panadería", descripcion: '', isActive: true, createdAt: new Date(), updatedAt: new Date() },
+]
 // Datos de ejemplo
 const initialProducts: Product[] = [
   { id: "1", name: "Café Americano", price: 3.5, category: "Bebidas", stock: 50, cost: 1.5 },
@@ -174,7 +180,7 @@ export function AdminPanel() {
                     <CardTitle>Inventario de Productos</CardTitle>
                     <CardDescription>Gestiona tu catálogo de productos</CardDescription>
                   </div>
-                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  {/* <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                     <DialogTrigger asChild>
                       <Button
                         onClick={() => {
@@ -261,7 +267,15 @@ export function AdminPanel() {
                         </DialogFooter>
                       </form>
                     </DialogContent>
-                  </Dialog>
+                  </Dialog> */}
+
+                  <DialogProducto
+                    isOpen={isDialogOpen}
+                    onClose={() => setIsDialogOpen(false)}
+                    onSubmit={() => setIsDialogOpen(false)}
+                    producto={[]}
+                    categories={initialCategories}
+                  />
                 </div>
               </CardHeader>
               <CardContent>
@@ -297,6 +311,7 @@ export function AdminPanel() {
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
                               <Button
+                                className="cursor-pointer"
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => {

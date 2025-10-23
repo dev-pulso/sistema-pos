@@ -12,7 +12,7 @@ export interface ProductoDto {
     isActive?: boolean;
     categoriaId: string;
 }
-export interface ProductoResponseDto {
+export interface ProductoResponse {
     id: string;
     barcode: string;
     nombre: string;

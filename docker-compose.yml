@@ -8,8 +8,8 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=postgres
-      - DB_PASS=postgres
-      - DB_NAME=inventario
+      - DB_PASS=0611
+      - DB_NAME=sistema_pos
       - JWT_SECRET=changeme
     depends_on:
       - db
@@ -18,7 +18,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=inventario
+      - POSTGRES_DB=sistema_pos
     volumes:
       - db_data:/var/lib/postgresql/data
 volumes:

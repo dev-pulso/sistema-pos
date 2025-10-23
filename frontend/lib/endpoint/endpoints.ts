@@ -1,4 +1,4 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
 
 export enum PRODUCT_ENDPOINT {
   LISTAR = "/productos",
@@ -15,6 +15,16 @@ export enum USER_ENDPOINT {
   PERFIL = "/auth/profile/:userId",
   POSTS = "/users/:userId/posts/:postId",
 }
+
+export enum CATEGORY_ENDPOINT {
+  LISTAR = "/categorias",
+  CREAR = "/categorias",
+  DETALLE = "/categorias/:id",
+  ACTUALIZAR = "/categorias/:id",
+  ELIMINAR = "/categorias/:id",
+}
+
+
 
 /**
  * Reemplaza los valores dinámicos en la ruta como :id, :slug, :userId, etc.
@@ -34,5 +44,6 @@ export const buildEndpoint = (path: string, params: Record<string, any> = {}) =>
 export const ENDPOINTS = {
   PRODUCTO: PRODUCT_ENDPOINT,
   USUARIO: USER_ENDPOINT,
+  CATEGORIA: CATEGORY_ENDPOINT,
   build: buildEndpoint,
 };

@@ -1,0 +1,67 @@
+# ===============================
+# Node.js / npm
+# ===============================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Build outputs
+dist/
+build/
+.tmp/
+temp/
+.cache/
+
+# Logs
+logs/
+*.log
+logfile
+debug.log
+
+# ===============================
+# Frontend (React / Vite)
+# ===============================
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.eslintcache
+
+# ===============================
+# Backend (NestJS / Express)
+# ===============================
+backend/node_modules/
+backend/dist/
+backend/.env
+backend/*.log
+
+# ===============================
+# OS / IDE Files
+# ===============================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# ===============================
+# Docker
+# ===============================
+docker-compose.override.yml
+*.pid
+
+# ===============================
+# Misc
+# ===============================
+*.local
+*.bak
+*.tmp
+*.old

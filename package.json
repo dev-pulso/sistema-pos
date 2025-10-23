@@ -1,0 +1,17 @@
+{
+  "name": "sistema-pos",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+     "start": "concurrently -n BACK,FRONT -c blue,green \"npm run start:back\" \"npm run start:front\"",
+    "start:back": "cd backend && npm run start:dev",
+    "start:front": "cd frontend && npm run dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
