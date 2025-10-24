@@ -5,9 +5,9 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { useAuthStore } from "@/store/auth.store"
 import { ChevronDown, Eye, EyeOff, Mail, X } from "lucide-react"
 import { useEffect, useState } from "react"
-import { Rols } from "../page"
 import { useRegister } from "@/modules/auth/hooks/useRegister"
 import { toast } from "sonner"
+import { Rols } from "@/config/app.interface"
 
 export default function RegisterPage() {
   const { mutate, isPending, isError, error, data } = useRegister();

@@ -23,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Package, Plus, Edit, Trash2, DollarSign, ShoppingCart, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import DialogProducto from "./admin/dialog-producto"
-import { Categorias } from "@/config/app.interface"
+import { Categorias, Productos } from "@/config/app.interface"
 
 // Tipos
 interface Product {
@@ -48,15 +48,11 @@ const initialCategories: Categorias[] = [
   { id: "3", nombre: "Panadería", descripcion: '', isActive: true, createdAt: new Date(), updatedAt: new Date() },
 ]
 // Datos de ejemplo
-const initialProducts: Product[] = [
-  { id: "1", name: "Café Americano", price: 3.5, category: "Bebidas", stock: 50, cost: 1.5 },
-  { id: "2", name: "Cappuccino", price: 4.5, category: "Bebidas", stock: 45, cost: 2.0 },
-  { id: "3", name: "Croissant", price: 2.5, category: "Panadería", stock: 30, cost: 1.0 },
-  { id: "4", name: "Sandwich", price: 6.0, category: "Comida", stock: 25, cost: 3.0 },
-  { id: "5", name: "Ensalada", price: 7.5, category: "Comida", stock: 20, cost: 3.5 },
-  { id: "6", name: "Jugo Natural", price: 4.0, category: "Bebidas", stock: 35, cost: 2.0 },
-  { id: "7", name: "Muffin", price: 3.0, category: "Panadería", stock: 40, cost: 1.2 },
-  { id: "8", name: "Té Verde", price: 3.0, category: "Bebidas", stock: 60, cost: 1.0 },
+const initialProducts: Productos[] = [
+  { id: "1", nombre: "Café Americano", precio: 3.5, costo: 1.5, stock: 50, barcode: "13123123123142", descripcion: "", sku: "", unidadMedida: "unidad", cantidad: 10, isActive: false, categoria: {} as Categorias, createdAt: new Date(), updatedAt: new Date() },
+  { id: "2", nombre: "Cappuccino", precio: 4.5, costo: 2.0, stock: 45, barcode: "12312314234", descripcion: "", sku: "", unidadMedida: "unidad", cantidad: 20, isActive: false, categoria: {} as Categorias, createdAt: new Date(), updatedAt: new Date() },
+  { id: "3", nombre: "Croissant", precio: 2.5, costo: 1.0, stock: 30, barcode: "4324322563441", descripcion: "", sku: "", unidadMedida: "unidad", cantidad: 30, isActive: false, categoria: {} as Categorias, createdAt: new Date(), updatedAt: new Date() },
+  { id: "4", nombre: "Sandwich", precio: 6.0, costo: 3.0, stock: 25, barcode: "12312423441", descripcion: "", sku: "", unidadMedida: "unidad", cantidad: 40, isActive: false, categoria: {} as Categorias, createdAt: new Date(), updatedAt: new Date() },
 ]
 
 const sampleSales: Sale[] = [
@@ -67,8 +63,8 @@ const sampleSales: Sale[] = [
 ]
 
 export function AdminPanel() {
-  const [products, setProducts] = useState<Product[]>(initialProducts)
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null)
+  const [products, setProducts] = useState<Productos[]>(initialProducts)
+  const [editingProduct, setEditingProduct] = useState<Productos | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   // Estadísticas
@@ -80,13 +76,22 @@ export function AdminPanel() {
   const handleSaveProduct = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     const formData = new FormData(e.currentTarget)
-    const productData: Product = {
+    const productData: Productos = {
       id: editingProduct?.id || `${Date.now()}`,
-      name: formData.get("name") as string,
-      price: Number.parseFloat(formData.get("price") as string),
-      cost: Number.parseFloat(formData.get("cost") as string),
-      category: formData.get("category") as string,
+      nombre: formData.get("nombre") as string,
+      precio: Number.parseFloat(formData.get("precio") as string),
+      costo: Number.parseFloat(formData.get("costo") as string),
+      // categoria: formData.get("categoria") as string,
       stock: Number.parseInt(formData.get("stock") as string),
+      barcode: "",
+      descripcion: "",
+      sku: "",
+      unidadMedida: "unidad",
+      cantidad: 0,
+      isActive: false,
+      categoria: initialCategories.find((c) => c.nombre === formData.get("categoria") as string) || {} as Categorias,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     }
 
     if (editingProduct) {
@@ -180,101 +185,19 @@ export function AdminPanel() {
                     <CardTitle>Inventario de Productos</CardTitle>
                     <CardDescription>Gestiona tu catálogo de productos</CardDescription>
                   </div>
-                  {/* <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        onClick={() => {
-                          setEditingProduct(null)
-                        }}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Nuevo Producto
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                      <form onSubmit={handleSaveProduct}>
-                        <DialogHeader>
-                          <DialogTitle>{editingProduct ? "Editar Producto" : "Nuevo Producto"}</DialogTitle>
-                          <DialogDescription>
-                            {editingProduct
-                              ? "Modifica los datos del producto"
-                              : "Agrega un nuevo producto al inventario"}
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid gap-2">
-                            <Label htmlFor="name">Nombre</Label>
-                            <Input id="name" name="name" defaultValue={editingProduct?.name} required />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                              <Label htmlFor="price">Precio de Venta</Label>
-                              <Input
-                                id="price"
-                                name="price"
-                                type="number"
-                                step="0.01"
-                                defaultValue={editingProduct?.price}
-                                required
-                              />
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="cost">Costo</Label>
-                              <Input
-                                id="cost"
-                                name="cost"
-                                type="number"
-                                step="0.01"
-                                defaultValue={editingProduct?.cost}
-                                required
-                              />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                              <Label htmlFor="category">Categoría</Label>
-                              <Select name="category" defaultValue={editingProduct?.category || "Bebidas"}>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Bebidas">Bebidas</SelectItem>
-                                  <SelectItem value="aseo">Aseo</SelectItem>
-                                  <SelectItem value="lacteos">Lacteos</SelectItem>
-                                  <SelectItem value="limpieza">Limpieza</SelectItem>
-                                  <SelectItem value="mascotas">Mascotas</SelectItem>
-                                  <SelectItem value="aceites">Aceites</SelectItem>
-                                  <SelectItem value="granos">Granos</SelectItem>
-                                  <SelectItem value="proteinas">Proteínas</SelectItem>
-                                  <SelectItem value="fruver">Frutas y verduras</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div className="grid gap-2">
-                              <Label htmlFor="stock">Stock</Label>
-                              <Input
-                                id="stock"
-                                name="stock"
-                                type="number"
-                                defaultValue={editingProduct?.stock}
-                                required
-                              />
-                            </div>
-                          </div>
-                        </div>
-                        <DialogFooter>
-                          <Button type="submit">{editingProduct ? "Guardar Cambios" : "Crear Producto"}</Button>
-                        </DialogFooter>
-                      </form>
-                    </DialogContent>
-                  </Dialog> */}
-
+                  <Button
+                    onClick={() => {
+                      setEditingProduct(null)
+                      setIsDialogOpen(true)
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Nuevo Producto
+                  </Button>
                   <DialogProducto
                     isOpen={isDialogOpen}
                     onClose={() => setIsDialogOpen(false)}
-                    onSubmit={() => setIsDialogOpen(false)}
-                    producto={[]}
-                    categories={initialCategories}
+                    editingProduct={editingProduct}
                   />
                 </div>
               </CardHeader>
@@ -293,15 +216,15 @@ export function AdminPanel() {
                   </TableHeader>
                   <TableBody>
                     {products.map((product) => {
-                      const margin = ((product.price - product.cost) / product.price) * 100
+                      const margin = ((product.precio - product.costo) / product.precio) * 100
                       return (
                         <TableRow key={product.id}>
-                          <TableCell className="font-medium">{product.name}</TableCell>
+                          <TableCell className="font-medium">{product.nombre}</TableCell>
                           <TableCell>
-                            <Badge variant="secondary">{product.category}</Badge>
+                            <Badge variant="secondary">{product.categoria.nombre}</Badge>
                           </TableCell>
-                          <TableCell className="text-right">${product.cost.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">${product.price.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">${product.costo.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">${product.precio.toFixed(2)}</TableCell>
                           <TableCell className="text-right">
                             <Badge variant={product.stock < 30 ? "destructive" : "default"}>{product.stock}</Badge>
                           </TableCell>
