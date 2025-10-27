@@ -22,6 +22,7 @@ interface ProductoCardProps {
 export default function ProductosCard({ producto, isDialogOpen, setIsDialogOpen }: ProductoCardProps) {
     const [editingProduct, setEditingProduct] = useState<Productos | null>(null);
     const [nombreCategoria, setNombreCategoria] = useState<string>("");
+
     const [product, setProduct] = useState({
         barcode: '',
         nombre: '',
@@ -98,6 +99,8 @@ export default function ProductosCard({ producto, isDialogOpen, setIsDialogOpen 
     const handleDeleteProduct = (id: string) => {
         // Lógica para eliminar el producto
     }
+
+
 
     return (
         <Card>

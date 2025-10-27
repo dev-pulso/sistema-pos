@@ -8,7 +8,7 @@ export const getCategorias = async () => {
 };
 
 
-export const createCategoria = async (data: CategoriaDto): Promise<CategoriaResponse[]> => {
+export const createCategoria = async (data: CategoriaDto): Promise<CategoriaResponse> => {
    const res = await fetch(`${ENDPOINTS.build(ENDPOINTS.CATEGORIA.CREAR)}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

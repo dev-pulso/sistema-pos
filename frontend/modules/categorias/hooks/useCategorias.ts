@@ -10,10 +10,10 @@ export const useCategorias = () => {
   });
 
 
-  const mutation = useMutation<CategoriaResponse[], Error, CategoriaDto>({
+  const mutation = useMutation<CategoriaResponse, Error, CategoriaDto>({
     mutationFn: createCategoria,
   });
-
+  
 
  return {
     categorias: data || [],

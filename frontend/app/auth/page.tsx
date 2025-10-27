@@ -52,8 +52,9 @@ export default function AuthPage() {
       {
         onSuccess: (data) => {
           if (data) {
-            login(data.user, data.accessToken)
-            router.push("/");
+            const { user, accessToken } = data;
+            login(user,accessToken)
+            router.push("/auth");
           }
         },
         onError: (error) => {
