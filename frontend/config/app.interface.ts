@@ -9,10 +9,10 @@ export type UnidadMedida = 'unidad' | 'g' | 'kg' | 'ml' | 'lt';
 export interface Categorias{
     id: string;
     nombre: string;
-    descripcion: string;
-    isActive: boolean;
-    createdAt: Date;
-    updatedAt: Date;
+    descripcion?: string;
+    isActive?: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export interface Productos{

@@ -9,7 +9,7 @@ export default function useProductos() {
         queryFn: getProductos,
     });
 
-    const mutationProducto = useMutation<ProductoResponse[], Error, ProductoDto>({
+    const mutationProducto = useMutation<ProductoResponse, Error, ProductoDto>({
         mutationFn: createProducto,
     });
 

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -24,6 +24,7 @@ import { Package, Plus, Edit, Trash2, DollarSign, ShoppingCart, ArrowLeft } from
 import Link from "next/link"
 import DialogProducto from "./admin/dialog-producto"
 import { Categorias, Productos } from "@/config/app.interface"
+import useProductos from "@/modules/productos/hooks/useProductos"
 
 // Tipos
 interface Product {
@@ -110,6 +111,12 @@ export function AdminPanel() {
       setProducts(products.filter((p) => p.id !== id))
     }
   }
+
+  const { productos} = useProductos()
+  useEffect(() => {
+    console.log('productos', productos);
+    
+  }, [productos])
 
   return (
     <div className="min-h-screen bg-muted/30">

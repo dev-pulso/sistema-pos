@@ -1,29 +1,33 @@
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { useForm } from "react-hook-form";
+import { ControllerRenderProps, useForm } from "react-hook-form";
 import { Package, Barcode, Layers, DollarSign, Hash, ChevronsUpDown, Check, CheckCheck } from "lucide-react";
+import { toast } from "sonner";
+
 
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
-
-import { Productos, UnidadMedida } from "@/config/app.interface";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
-import { useCategorias } from "@/modules/categorias/hooks/useCategorias";
-import { CategoriaResponse } from "@/modules/categorias/types/categoria";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "../ui/command";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import useProductos from "@/modules/productos/hooks/useProductos";
 import { Spinner } from "../ui/spinner";
+
+import { Productos } from "@/config/app.interface";
+import { useCategorias } from "@/modules/categorias/hooks/useCategorias";
+import { CategoriaResponse } from "@/modules/categorias/types/categoria";
+import useProductos from "@/modules/productos/hooks/useProductos";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
     barcode: z.string().min(1, { message: "El código de barras es requerido" }),
     nombre: z.string().min(1, { message: "El nombre es requerido" }),
-    categoria: z.string().min(1, { message: "La categoría es requerida" }),
-    unidad: z.enum(['unidad', 'g', 'kg', 'ml', 'lt'], { message: "La unidad de medida es requerida" }),
+    categoria: z.object({
+        id: z.string().uuid({ message: "La categoría seleccionada no es válida" }),
+        nombre: z.string().min(1),
+    }),
+    unidadMedida: z.enum(['unidad', 'g', 'kg', 'ml', 'lt'], { message: "La unidad de medida es requerida" }),
     stock: z.number().min(0, { message: "El stock debe ser mayor a 0" }),
     cantidad: z.number().min(0, { message: "La cantidad debe ser mayor a 0" }),
     precio: z.number().min(0, { message: "El precio debe ser mayor a 0" }),
@@ -39,7 +43,14 @@ export default function DialogProducto({
     onClose: () => void;
     editingProduct: Productos | null;
 }) {
-    const units = ['unidad', 'lt', 'kg', 'lb', 'g', 'ml'];
+    const units = [
+        { value: 'unidad', label: 'Unidad' },
+        { value: 'g', label: 'Gramos (g)' },
+        { value: 'kg', label: 'Kilogramos (kg)' },
+        { value: 'ml', label: 'Mililitros (ml)' },
+        { value: 'lt', label: 'Litros (lt)' },
+    ];
+
     const [categorias, setCategorias] = useState<CategoriaResponse[]>();
     const [categoria, setCategoria] = useState<CategoriaResponse>();
     const [open, setOpen] = useState(false)
@@ -58,38 +69,58 @@ export default function DialogProducto({
             cantidad: editingProduct?.cantidad || 0,
             precio: editingProduct?.precio || 0,
             costo: editingProduct?.costo || 0,
-            categoria: editingProduct?.categoria.nombre || "",
-            unidad: "unidad",
+            categoria: editingProduct ? { id: editingProduct.categoria.id, nombre: editingProduct.categoria.nombre } : { id: "", nombre: "" },
+            unidadMedida: "unidad",
             stock: editingProduct?.stock || 0,
         }
     })
-    function hanldeCategoria() {
+    async function hanldeCategoria(field: ControllerRenderProps<z.infer<typeof formSchema>, "categoria">) {
+        if (!value.trim()) return;
         setIsLoading(true);
-        mutation.mutate({
-            nombre: value
-        }, {
-            onSuccess: (data) => {
-                setCategoria(data);
-                toast.success("Categoría creada con éxito");
-                setValue(current => current === data.nombre ? "" : current)
 
-                setOpen(false)
-            },
-            onError: (error) => {
-                console.error('Error al crear categoria', error);
+        mutation.mutate(
+            { nombre: value },
+            {
+                onSuccess: (data) => {
+                    toast.success("Categoría creada con éxito");
+
+                    // Agregar la nueva categoría al listado
+                    setCategoria(data);
+                    setCategorias((prev) => [...(prev || []), data]);
+
+                    // ✅ Establecer la categoría creada como seleccionada
+                    field.onChange({ id: data.id, nombre: data.nombre });
+
+                    // ✅ Mantener visible el nombre seleccionado
+                    setValue(data.nombre);
+
+                    // Cerrar popover
+                    setOpen(false);
+                    setIsLoading(false);
+
+                },
+                onError: (error) => {
+                    console.error("Error al crear categoria", error);
+                    toast.error("No se pudo crear la categoría", { description: error.message });
+                },
+                onSettled: () => {
+                    setIsLoading(false);
+                },
             }
-        });
-        setIsLoading(false);
+        );
     }
+
+    function limpiarFormulario() {
+        form.reset();
+    }
+
     function onSubmit(data: z.infer<typeof formSchema>) {
         setIsLoading(true);
-
-
         mutationProducto.mutate({
             barcode: data.barcode,
             nombre: data.nombre,
-            categoriaId: categoria?.id!,
-            unidadMedida: data.unidad,
+            categoriaId: data.categoria.id,
+            unidadMedida: data.unidadMedida,
             stock: data.stock,
             cantidad: data.cantidad,
             costo: data.costo,
@@ -97,11 +128,13 @@ export default function DialogProducto({
 
         }, {
             onSuccess: (data) => {
-                toast.success("Producto creado con éxito");
-                onClose();
+                toast.success(`Producto "${data.nombre}" creado con éxito`);
+                form.reset();
+                setOpen(false);
             },
             onError: (error) => {
                 console.error('Error al crear producto', error);
+                toast.error("No se pudo crear el producto", { description: error.message });
             }
         })
         setIsLoading(false);
@@ -111,7 +144,7 @@ export default function DialogProducto({
 
     useEffect(() => {
         setCategorias(dataCategorias);
-    }, [categorias])
+    }, [dataCategorias])
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -192,9 +225,11 @@ export default function DialogProducto({
                                                                         aria-expanded={open}
                                                                         className=" justify-between"
                                                                     >
-                                                                        {value
-                                                                            ? categorias?.find((cate) => cate.nombre === value)?.nombre
-                                                                            : "Seleccionar una categoria..."}
+                                                                        {
+                                                                            field.value?.nombre
+                                                                                ? field.value.nombre
+                                                                                : "Seleccionar una categoria..."
+                                                                        }
                                                                         <ChevronsUpDown className="opacity-50" />
                                                                     </Button>
                                                                 </PopoverTrigger>
@@ -208,7 +243,7 @@ export default function DialogProducto({
                                                                             />
                                                                             {
                                                                                 !isLoading ? (
-                                                                                    <Check onClick={hanldeCategoria} className="mr-2 mt-2 h-6 w-6 cursor-pointer " />
+                                                                                    <Check onClick={() => hanldeCategoria(field)} className="mr-2 mt-2 h-6 w-6 cursor-pointer " />
                                                                                 ) : (
                                                                                     <Spinner className="mr-2 mt-2 h-6 w-6 cursor-pointer " />
                                                                                 )
@@ -220,13 +255,12 @@ export default function DialogProducto({
                                                                             <CommandGroup>
                                                                                 {categorias?.map((cate) => (
                                                                                     <CommandItem
-                                                                                        {...field}
                                                                                         key={cate.id}
                                                                                         value={cate.nombre}
                                                                                         onSelect={(currentValue) => {
-                                                                                            setValue(currentValue === value ? "" : currentValue)
-                                                                                            form.setValue("categoria", currentValue);
-                                                                                            setOpen(false)
+                                                                                            field.onChange({ id: cate.id, nombre: cate.nombre });
+                                                                                            setValue(cate.nombre);
+                                                                                            setOpen(false);
                                                                                         }}
                                                                                     >
                                                                                         {cate.nombre}
@@ -250,7 +284,7 @@ export default function DialogProducto({
                                             />
                                             <FormField
                                                 control={form.control}
-                                                name="unidad"
+                                                name="unidadMedida"
                                                 render={({ field }) => (
                                                     <FormItem>
                                                         <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -269,8 +303,8 @@ export default function DialogProducto({
                                                                     <SelectGroup>
                                                                         {
                                                                             units.map((unit) => (
-                                                                                <SelectItem key={unit} value={unit}>
-                                                                                    {unit}
+                                                                                <SelectItem key={unit.value} value={unit.value}>
+                                                                                    {unit.label}
                                                                                 </SelectItem>
                                                                             ))
                                                                         }
@@ -370,6 +404,8 @@ export default function DialogProducto({
                         </div>
 
                         <DialogFooter>
+                            <Button onClick={limpiarFormulario}>Limpiar formulario</Button>
+
                             {
                                 isLoading && <Spinner />
                             }

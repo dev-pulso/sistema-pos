@@ -1,20 +1,24 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Productos } from "./entities/producto.entity";
 import { Repository } from "typeorm";
 import { CrearProductDto } from "./dto/productos.dto";
+import { Categorias } from "src/categorias/entities/categoria.entity";
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class ProductsService {
     constructor(
         @InjectRepository(Productos)
         private readonly productsRepository: Repository<Productos>,
+        @InjectRepository(Categorias)
+        private readonly categoriasRepo: Repository<Categorias>,
     ) { }
 
     async buscarTodos() {
         const productos = await this.productsRepository.find({
             relations: ['categoria'],
-            where: { isActive: true }   
+            where: { isActive: true }
         })
         return productos
     }
@@ -31,14 +35,61 @@ export class ProductsService {
         return producto
     }
     async crear(producto: CrearProductDto) {
-        const nuevoProducto = this.productsRepository.create({
-            ...producto,
-            categoria: {
-                id: producto.categoriaId,
-            }
+
+        const categoria = await this.categoriasRepo.findOne({
+            where: { id: producto.categoriaId },
         });
-        return this.productsRepository.save(nuevoProducto);
+
+        if (!categoria) {
+            throw new NotFoundException('Categoría no encontrada');
+        }
+
+        const newProducto = this.productsRepository.create({
+            ...producto,
+            categoria,
+        });
+
+        // 🔹 Generar barcode si no se envió
+        if (!producto.barcode) {
+            newProducto.barcode = this.generateInternalBarcode();
+        }
+
+        // 🔹 Generar SKU incremental si no se envió
+        if (!producto.sku) {
+            newProducto.sku = await this.generateIncrementalSku();
+        }
+
+        // 🔹 Stock obligatorio
+        if (producto.stock == null) {
+            newProducto.stock = 0;
+        }
+
+        return this.productsRepository.save(newProducto);
     }
+
+     private generateInternalBarcode(): string {
+    return 'INT-' + uuid().split('-')[0].toUpperCase(); // Ej: INT-4A9F2B
+  }
+
+  private async generateIncrementalSku(): Promise<string> {
+    const lastProduct = await this.productsRepository
+      .createQueryBuilder('producto')
+      .orderBy('producto.createdAt', 'DESC')
+      .getOne();
+
+    let nextNumber = 1;
+
+    if (lastProduct && lastProduct.sku) {
+      const match = lastProduct.sku.match(/SKU-(\d+)/);
+      if (match) {
+        nextNumber = parseInt(match[1], 10) + 1;
+      }
+    }
+
+    return `SKU-${nextNumber.toString().padStart(4, '0')}`; // SKU-0001
+  }
+
+
     async remover(id: string) {
         const producto = await this.buscarPorId(id);
         if (!producto) {

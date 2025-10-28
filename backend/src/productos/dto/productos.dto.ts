@@ -13,12 +13,15 @@ export class CrearProductDto {
   nombre: string;
 
   @IsString()
+  @IsOptional()
   barcode: string;
 
+  @IsString()
+  unidadMedida: string;
 
-  @IsEnum(() => UnidadMedida)
-  unidadMedida: UnidadMedida;
-  
+  @IsOptional()
+  @IsString()
+  sku?: string;  
 
   @IsNumber()
   cantidad: number;
