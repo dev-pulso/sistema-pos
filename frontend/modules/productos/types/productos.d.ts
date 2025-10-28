@@ -1,3 +1,5 @@
+import { CategoriaResponse } from "@/modules/categorias/types/categoria";
+
 export type UnidadMedida = 'unidad' | 'g' | 'kg' | 'ml' | 'lt';
 
 export interface ProductoDto {
@@ -24,7 +26,7 @@ export interface ProductoResponse {
     costo: number;
     stock: number;
     isActive: boolean;
-    categoria: string;
+    categoria: CategoriaResponse;
     createdAt: Date;
     updatedAt: Date;
 }

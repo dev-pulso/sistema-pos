@@ -10,9 +10,7 @@ export interface Categorias{
     id: string;
     nombre: string;
     descripcion?: string;
-    isActive?: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
+    productos: Productos[];
 }
 
 export interface Productos{

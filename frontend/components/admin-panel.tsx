@@ -5,117 +5,36 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Package, Plus, Edit, Trash2, DollarSign, ShoppingCart, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import DialogProducto from "./admin/dialog-producto"
-import { Categorias, Productos } from "@/config/app.interface"
+import { Productos } from "@/config/app.interface"
 import useProductos from "@/modules/productos/hooks/useProductos"
+import { formatCurrency } from "@/lib/utils"
 
-// Tipos
-interface Product {
-  id: string
-  name: string
-  price: number
-  category: string
-  stock: number
-  cost: number
-}
-
-interface Sale {
-  id: string
-  date: string
-  total: number
-  items: number
-  status: string
-}
-const initialCategories: Categorias[] = [
-  { id: "1", nombre: "Bebidas", descripcion: '', isActive: true, createdAt: new Date(), updatedAt: new Date() },
-  { id: "2", nombre: "Comida", descripcion: '', isActive: true, createdAt: new Date(), updatedAt: new Date() },
-  { id: "3", nombre: "Panadería", descripcion: '', isActive: true, createdAt: new Date(), updatedAt: new Date() },
-]
-// Datos de ejemplo
-const initialProducts: Productos[] = [
-  { id: "1", nombre: "Café Americano", precio: 3.5, costo: 1.5, stock: 50, barcode: "13123123123142", descripcion: "", sku: "", unidadMedida: "unidad", cantidad: 10, isActive: false, categoria: {} as Categorias, createdAt: new Date(), updatedAt: new Date() },
-  { id: "2", nombre: "Cappuccino", precio: 4.5, costo: 2.0, stock: 45, barcode: "12312314234", descripcion: "", sku: "", unidadMedida: "unidad", cantidad: 20, isActive: false, categoria: {} as Categorias, createdAt: new Date(), updatedAt: new Date() },
-  { id: "3", nombre: "Croissant", precio: 2.5, costo: 1.0, stock: 30, barcode: "4324322563441", descripcion: "", sku: "", unidadMedida: "unidad", cantidad: 30, isActive: false, categoria: {} as Categorias, createdAt: new Date(), updatedAt: new Date() },
-  { id: "4", nombre: "Sandwich", precio: 6.0, costo: 3.0, stock: 25, barcode: "12312423441", descripcion: "", sku: "", unidadMedida: "unidad", cantidad: 40, isActive: false, categoria: {} as Categorias, createdAt: new Date(), updatedAt: new Date() },
-]
-
-const sampleSales: Sale[] = [
-  { id: "V001", date: "2025-01-16 10:30", total: 15.5, items: 3, status: "Completada" },
-  { id: "V002", date: "2025-01-16 11:15", total: 22.0, items: 5, status: "Completada" },
-  { id: "V003", date: "2025-01-16 12:00", total: 8.5, items: 2, status: "Completada" },
-  { id: "V004", date: "2025-01-16 13:45", total: 31.5, items: 7, status: "Completada" },
-]
 
 export function AdminPanel() {
-  const [products, setProducts] = useState<Productos[]>(initialProducts)
+  const [products, setProducts] = useState<Productos[]>([])
   const [editingProduct, setEditingProduct] = useState<Productos | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   // Estadísticas
-  const totalSales = sampleSales.reduce((sum, sale) => sum + sale.total, 0)
+  const totalSales = 0//sampleSales.reduce((sum, sale) => sum + sale.total, 0)
   const totalProducts = products.length
   const lowStockProducts = products.filter((p) => p.stock < 30).length
+  const { productos } = useProductos()
 
-  // Agregar/Editar producto
-  const handleSaveProduct = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    const formData = new FormData(e.currentTarget)
-    const productData: Productos = {
-      id: editingProduct?.id || `${Date.now()}`,
-      nombre: formData.get("nombre") as string,
-      precio: Number.parseFloat(formData.get("precio") as string),
-      costo: Number.parseFloat(formData.get("costo") as string),
-      // categoria: formData.get("categoria") as string,
-      stock: Number.parseInt(formData.get("stock") as string),
-      barcode: "",
-      descripcion: "",
-      sku: "",
-      unidadMedida: "unidad",
-      cantidad: 0,
-      isActive: false,
-      categoria: initialCategories.find((c) => c.nombre === formData.get("categoria") as string) || {} as Categorias,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    if (editingProduct) {
-      setProducts(products.map((p) => (p.id === editingProduct.id ? productData : p)))
-    } else {
-      setProducts([...products, productData])
-    }
-
-    setIsDialogOpen(false)
-    setEditingProduct(null)
-  }
-
-  // Eliminar producto
   const handleDeleteProduct = (id: string) => {
     if (confirm("¿Estás seguro de eliminar este producto?")) {
       setProducts(products.filter((p) => p.id !== id))
     }
   }
 
-  const { productos} = useProductos()
   useEffect(() => {
-    console.log('productos', productos);
-    
+    setProducts(productos)
   }, [productos])
 
   return (
@@ -170,7 +89,7 @@ export function AdminPanel() {
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{sampleSales.length}</div>
+              <div className="text-2xl font-bold">{0}</div>
               <p className="text-xs text-muted-foreground">Hoy</p>
             </CardContent>
           </Card>
@@ -230,8 +149,8 @@ export function AdminPanel() {
                           <TableCell>
                             <Badge variant="secondary">{product.categoria.nombre}</Badge>
                           </TableCell>
-                          <TableCell className="text-right">${product.costo.toFixed(2)}</TableCell>
-                          <TableCell className="text-right">${product.precio.toFixed(2)}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(product.costo)}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(product.precio)}</TableCell>
                           <TableCell className="text-right">
                             <Badge variant={product.stock < 30 ? "destructive" : "default"}>{product.stock}</Badge>
                           </TableCell>
@@ -284,14 +203,14 @@ export function AdminPanel() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sampleSales.map((sale) => (
+                    {productos.map((sale) => (
                       <TableRow key={sale.id}>
                         <TableCell className="font-medium">{sale.id}</TableCell>
-                        <TableCell>{sale.date}</TableCell>
-                        <TableCell className="text-right">{sale.items}</TableCell>
-                        <TableCell className="text-right font-medium">${sale.total.toFixed(2)}</TableCell>
+                        <TableCell>{sale.createdAt.toLocaleString()}</TableCell>
+                        <TableCell className="text-right">{sale.cantidad}</TableCell>
+                        <TableCell className="text-right font-medium">${sale.costo}</TableCell>
                         <TableCell>
-                          <Badge variant="default">{sale.status}</Badge>
+                          <Badge variant="default">{sale.isActive ? "Activo" : "Inactivo"}</Badge>
                         </TableCell>
                       </TableRow>
                     ))}

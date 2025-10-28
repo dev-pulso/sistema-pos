@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { ControllerRenderProps, useForm } from "react-hook-form";
-import { Package, Barcode, Layers, DollarSign, Hash, ChevronsUpDown, Check, CheckCheck } from "lucide-react";
+import { Package, Barcode, Layers, DollarSign, Hash, ChevronsUpDown, Check } from "lucide-react";
 import { toast } from "sonner";
 
 
@@ -18,7 +18,7 @@ import { Productos } from "@/config/app.interface";
 import { useCategorias } from "@/modules/categorias/hooks/useCategorias";
 import { CategoriaResponse } from "@/modules/categorias/types/categoria";
 import useProductos from "@/modules/productos/hooks/useProductos";
-import { cn } from "@/lib/utils";
+import { cn, formatNumberInputCOP } from "@/lib/utils";
 
 const formSchema = z.object({
     barcode: z.string().min(1, { message: "El código de barras es requerido" }),
@@ -43,6 +43,7 @@ export default function DialogProducto({
     onClose: () => void;
     editingProduct: Productos | null;
 }) {
+    console.log('editingProduct', editingProduct);
     const units = [
         { value: 'unidad', label: 'Unidad' },
         { value: 'g', label: 'Gramos (g)' },
@@ -62,6 +63,7 @@ export default function DialogProducto({
     const { categorias: dataCategorias, mutation } = useCategorias();
     const { mutationProducto } = useProductos()
 
+
     const form = useForm<z.infer<typeof formSchema>>({
         defaultValues: {
             nombre: editingProduct?.nombre || "",
@@ -70,10 +72,31 @@ export default function DialogProducto({
             precio: editingProduct?.precio || 0,
             costo: editingProduct?.costo || 0,
             categoria: editingProduct ? { id: editingProduct.categoria.id, nombre: editingProduct.categoria.nombre } : { id: "", nombre: "" },
-            unidadMedida: "unidad",
+            unidadMedida: editingProduct?.unidadMedida || "unidad",
             stock: editingProduct?.stock || 0,
         }
     })
+
+    useEffect(() => {
+        if (editingProduct) {
+            form.reset({
+                nombre: editingProduct.nombre || "",
+                barcode: editingProduct.barcode || "",
+                cantidad: editingProduct.cantidad || 0,
+                precio: editingProduct.precio || 0,
+                costo: editingProduct.costo || 0,
+                categoria: editingProduct.categoria
+                    ? {
+                        id: editingProduct.categoria.id,
+                        nombre: editingProduct.categoria.nombre,
+                    }
+                    : { id: "", nombre: "" },
+                unidadMedida: editingProduct.unidadMedida || "unidad",
+                stock: editingProduct.stock || 0,
+            });
+        }
+    }, [editingProduct, form]);
+
     async function hanldeCategoria(field: ControllerRenderProps<z.infer<typeof formSchema>, "categoria">) {
         if (!value.trim()) return;
         setIsLoading(true);
@@ -83,18 +106,11 @@ export default function DialogProducto({
             {
                 onSuccess: (data) => {
                     toast.success("Categoría creada con éxito");
-
-                    // Agregar la nueva categoría al listado
                     setCategoria(data);
                     setCategorias((prev) => [...(prev || []), data]);
-
-                    // ✅ Establecer la categoría creada como seleccionada
                     field.onChange({ id: data.id, nombre: data.nombre });
 
-                    // ✅ Mantener visible el nombre seleccionado
                     setValue(data.nombre);
-
-                    // Cerrar popover
                     setOpen(false);
                     setIsLoading(false);
 
@@ -350,7 +366,7 @@ export default function DialogProducto({
                                                             <Input
                                                                 {...field}
                                                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                                                placeholder="Ej: 1000"
+                                                                placeholder="Ej: 100"
                                                             />
                                                         </FormControl>
                                                     </FormItem>
@@ -368,8 +384,12 @@ export default function DialogProducto({
                                                         <FormControl>
                                                             <Input
                                                                 {...field}
+                                                                onChange={(e) => {
+                                                                    const formatted = formatNumberInputCOP(e.target.value);
+                                                                    field.onChange(formatted);
+                                                                }}
                                                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                                                placeholder="Ej: 100"
+                                                                placeholder="Ej: 10.000"
                                                             />
                                                         </FormControl>
                                                     </FormItem>
@@ -387,6 +407,10 @@ export default function DialogProducto({
                                                         <FormControl>
                                                             <Input
                                                                 {...field}
+                                                                onChange={(e) => {
+                                                                    const formatted = formatNumberInputCOP(e.target.value);
+                                                                    field.onChange(formatted);
+                                                                }}
                                                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                                                                 placeholder="Ej: 100"
                                                             />
