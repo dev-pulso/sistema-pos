@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { ControllerRenderProps, useForm } from "react-hook-form";
 import { Package, Barcode, Layers, DollarSign, Hash, ChevronsUpDown, Check } from "lucide-react";
@@ -38,10 +38,12 @@ export default function DialogProducto({
     isOpen,
     onClose,
     editingProduct,
+    onCreated,
 }: {
     isOpen: boolean;
     onClose: () => void;
     editingProduct: Productos | null;
+    onCreated?: (producto: Productos) => void;
 }) {
     console.log('editingProduct', editingProduct);
     const units = [
@@ -94,8 +96,19 @@ export default function DialogProducto({
                 unidadMedida: editingProduct.unidadMedida || "unidad",
                 stock: editingProduct.stock || 0,
             });
+        } else {
+            form.reset({
+                nombre: "",
+                barcode: "",
+                cantidad: 0,
+                precio: 0,
+                costo: 0,
+                categoria: { id: "", nombre: "" },
+                unidadMedida: "unidad",
+                stock: 0,
+            });
         }
-    }, [editingProduct, form]);
+    }, [editingProduct]);
 
     async function hanldeCategoria(field: ControllerRenderProps<z.infer<typeof formSchema>, "categoria">) {
         if (!value.trim()) return;
@@ -127,6 +140,8 @@ export default function DialogProducto({
     }
 
     function limpiarFormulario() {
+        console.log('limpiando formulario');
+
         form.reset();
     }
 
@@ -143,8 +158,26 @@ export default function DialogProducto({
             precio: data.precio,
 
         }, {
-            onSuccess: (data) => {
+                onSuccess: (data) => {
+                const newProductos: Productos = {
+                    id: data.id,
+                    nombre: data.nombre,
+                    precio: Number(data.precio),
+                    costo: Number(data.costo),
+                    stock: data.stock,
+                    barcode: data.barcode,
+                    descripcion: data.descripcion,
+                    sku: data.sku,
+                    unidadMedida: data.unidadMedida,
+                    cantidad: Number(data.cantidad),
+                    isActive: data.isActive,
+                    categoria: data.categoria,
+                    createdAt: data.createdAt,
+                    updatedAt: data.updatedAt,
+                }
                 toast.success(`Producto "${data.nombre}" creado con éxito`);
+                    // notify parent (if provided) so it can add the new product to the list/table
+                    if (onCreated) onCreated(newProductos);
                 form.reset();
                 setOpen(false);
             },
@@ -196,6 +229,11 @@ export default function DialogProducto({
                                                         <FormControl>
                                                             <Input
                                                                 {...field}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Enter') {
+                                                                        e.preventDefault()
+                                                                    }
+                                                                }}
                                                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                                                                 placeholder="Ej: 1234567890123"
                                                             />
@@ -428,7 +466,7 @@ export default function DialogProducto({
                         </div>
 
                         <DialogFooter>
-                            <Button onClick={limpiarFormulario}>Limpiar formulario</Button>
+                            <Button type="button" onClick={limpiarFormulario}>Limpiar formulario</Button>
 
                             {
                                 isLoading && <Spinner />

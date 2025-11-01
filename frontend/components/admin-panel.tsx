@@ -14,6 +14,7 @@ import DialogProducto from "./admin/dialog-producto"
 import { Productos } from "@/config/app.interface"
 import useProductos from "@/modules/productos/hooks/useProductos"
 import { formatCurrency } from "@/lib/utils"
+import ProductosCard from "./admin/productos-card"
 
 
 export function AdminPanel() {
@@ -104,7 +105,8 @@ export function AdminPanel() {
 
           {/* Tab de Productos */}
           <TabsContent value="products" className="space-y-4">
-            <Card>
+            <ProductosCard producto={products!} isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
+           {/*  <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -181,7 +183,7 @@ export function AdminPanel() {
                   </TableBody>
                 </Table>
               </CardContent>
-            </Card>
+            </Card>*/}
           </TabsContent>
 
           {/* Tab de Ventas */}
