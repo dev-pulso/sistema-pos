@@ -12,6 +12,7 @@ import { Productos } from "@/config/app.interface";
 import { useCategorias } from "@/modules/categorias/hooks/useCategorias";
 import { toast } from "sonner";
 import DialogProducto from "./dialog-producto";
+import { formatNumberInputCOP } from "@/lib/utils";
 
 interface ProductoCardProps {
     producto: Productos[];
@@ -87,8 +88,8 @@ export default function ProductosCard({ producto, isDialogOpen, setIsDialogOpen 
                                     <TableCell>
                                         <Badge variant="secondary">{product.categoria.nombre}</Badge>
                                     </TableCell>
-                                    <TableCell className="text-right">${product.costo.toFixed(2)}</TableCell>
-                                    <TableCell className="text-right">${product.precio.toFixed(2)}</TableCell>
+                                    <TableCell className="text-right">${formatNumberInputCOP(product.costo.toString())}</TableCell>
+                                    <TableCell className="text-right">${formatNumberInputCOP(product.precio.toString())}</TableCell>
                                     <TableCell className="text-right">
                                         <Badge variant={product.stock < 30 ? "destructive" : "default"}>{product.stock}</Badge>
                                     </TableCell>

@@ -140,8 +140,6 @@ export default function DialogProducto({
     }
 
     function limpiarFormulario() {
-        console.log('limpiando formulario');
-
         form.reset();
     }
 
@@ -154,16 +152,16 @@ export default function DialogProducto({
             unidadMedida: data.unidadMedida,
             stock: data.stock,
             cantidad: data.cantidad,
-            costo: data.costo,
-            precio: data.precio,
+            costo: parseInt(data.costo.toString().replace(/\./g, ''), 10),
+            precio: parseInt(data.precio.toString().replace(/\./g, ''), 10),
 
         }, {
-                onSuccess: (data) => {
+            onSuccess: (data) => {
                 const newProductos: Productos = {
                     id: data.id,
                     nombre: data.nombre,
-                    precio: Number(data.precio),
-                    costo: Number(data.costo),
+                    precio: data.precio,
+                    costo: data.costo,
                     stock: data.stock,
                     barcode: data.barcode,
                     descripcion: data.descripcion,
@@ -176,8 +174,8 @@ export default function DialogProducto({
                     updatedAt: data.updatedAt,
                 }
                 toast.success(`Producto "${data.nombre}" creado con éxito`);
-                    // notify parent (if provided) so it can add the new product to the list/table
-                    if (onCreated) onCreated(newProductos);
+                // notify parent (if provided) so it can add the new product to the list/table
+                if (onCreated) onCreated(newProductos);
                 form.reset();
                 setOpen(false);
             },

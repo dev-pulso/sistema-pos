@@ -61,8 +61,8 @@ export function POSHeader() {
   return (
     <header className="flex h-16 items-center justify-between px-6">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary">
-          <Vegan className="h-5 w-5 text-primary-foreground" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg">
+          <Vegan className="h-8 w-8 text-primary" />
         </div>
         <div>
           <h1 className="text-lg font-semibold leading-none text-foreground">Granero el Oriente</h1>
@@ -73,7 +73,7 @@ export function POSHeader() {
       <div className="flex items-center gap-4">
         <div className="text-right">
           <p className="text-sm font-medium text-foreground">Caja 01</p>
-          <p className="text-xs text-muted-foreground">Cajero: {rol ? rol : "No Logueado"}</p>
+          <p className="text-xs text-muted-foreground">Rol: {rol ? rol : "No Logueado"}</p>
         </div>
 
         <DropdownMenu>

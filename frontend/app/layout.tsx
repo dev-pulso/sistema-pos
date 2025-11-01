@@ -6,6 +6,7 @@ import { QueryProvider } from '@/provider/query-provider';
 import { Toaster } from '@/components/ui/sonner';
 
 import './globals.css'
+
 const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
@@ -13,6 +14,12 @@ export const metadata: Metadata = {
   title: 'Granero el oriente',
   description: 'Sistema de gestión para Granero el oriente',
   generator: 'jpulido.dev',
+  icons: {
+    icon: [{
+      url: '/img/vegan.svg',
+      type: 'image/svg+xml',
+    }],
+  },
 }
 
 export default function RootLayout({
@@ -22,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans antialiased`}>
+      <body className={`font-sans antialiased ${_geist.className} ${_geistMono.className}`}>
         <QueryProvider>
           {children}
           <Analytics />
