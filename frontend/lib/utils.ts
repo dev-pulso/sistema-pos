@@ -20,3 +20,7 @@ export function formatNumberInputCOP(value: string): string {
   // Convierte a número y aplica formato con puntos
   return Number(numericValue).toLocaleString('es-CO');
 }
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

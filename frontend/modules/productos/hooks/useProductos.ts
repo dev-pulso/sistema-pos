@@ -1,10 +1,12 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ProductoDto, ProductoResponse } from "../types/productos";
 import { createProducto, getProductos } from "../services/productos.service";
 import { Productos } from "@/config/app.interface";
+import { useProductoStore } from "@/store/poducto.store";
 
 export default function useProductos() {
+    const { setProductos } = useProductoStore()
 
     const { data, isLoading, error } = useQuery<ProductoResponse[], Error>({
         queryKey: ["productos"],
@@ -37,8 +39,7 @@ export default function useProductos() {
             updatedAt: p.updatedAt,
         }));
     }, [data])
-
-
+    
 
     return {
         productos,

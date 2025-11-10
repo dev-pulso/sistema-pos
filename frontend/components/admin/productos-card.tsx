@@ -23,14 +23,12 @@ interface ProductoCardProps {
 
 export default function ProductosCard({ producto, isDialogOpen, setIsDialogOpen }: ProductoCardProps) {
     const [editingProduct, setEditingProduct] = useState<Productos | null>(null);
-    const [nombreCategoria, setNombreCategoria] = useState<string>(""); 
     const [productosState, setProductosState] = useState<Productos[]>(producto);
 
     useEffect(() => {
         setProductosState(producto);
     }, [producto]);
 
-    const { mutation } = useCategorias()
 
     return (
         <Card>

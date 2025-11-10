@@ -15,6 +15,15 @@ export enum USER_ENDPOINT {
   PERFIL = "/auth/profile/:userId",
   POSTS = "/users/:userId/posts/:postId",
 }
+export enum CAJON_ENDPOINT {
+  ABRIR = "/cajon",
+}
+
+export enum VENTAS_ENDPOINT{
+  CREAR_VENTAS ='/ventas',
+  REPORTE_VENTAS = '/ventas'
+}
+
 
 export enum CATEGORY_ENDPOINT {
   LISTAR = "/categorias",
@@ -45,5 +54,7 @@ export const ENDPOINTS = {
   PRODUCTO: PRODUCT_ENDPOINT,
   USUARIO: USER_ENDPOINT,
   CATEGORIA: CATEGORY_ENDPOINT,
+  CAJON: CAJON_ENDPOINT,
+  VENTAS:VENTAS_ENDPOINT,
   build: buildEndpoint,
 };

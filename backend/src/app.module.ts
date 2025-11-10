@@ -10,6 +10,7 @@ import { UsersModule } from './users/users.module';
 import { ClientesModule } from './clientes/clientes.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import { AuthModule } from './auth/auth.module';
+import { CajonModule } from './cajon/cajon.module';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { AuthModule } from './auth/auth.module';
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        // migrations: [__dirname + '/migrations/**/*{.ts,.js}'],      
+        migrations: [__dirname + '/src/migrations/**/*{.ts,.js}'],
         // synchronize: configService.get('NODE_ENV') === 'development',
         synchronize: true,
       }),
@@ -39,8 +40,9 @@ import { AuthModule } from './auth/auth.module';
     UsersModule,
     VentasModule,
     AuthModule,
+    CajonModule
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

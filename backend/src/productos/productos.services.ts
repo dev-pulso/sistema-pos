@@ -40,6 +40,14 @@ export class ProductsService {
             where: { id: producto.categoriaId },
         });
 
+        const codeBar = await this.productsRepository.findOne({
+            where: { barcode: producto.barcode },
+        });
+
+        if (codeBar) {
+            throw new Error('El código de barras ya existe');
+        }
+
         if (!categoria) {
             throw new NotFoundException('Categoría no encontrada');
         }

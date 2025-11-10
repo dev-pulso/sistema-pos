@@ -19,6 +19,9 @@ import { useCategorias } from "@/modules/categorias/hooks/useCategorias";
 import { CategoriaResponse } from "@/modules/categorias/types/categoria";
 import useProductos from "@/modules/productos/hooks/useProductos";
 import { cn, formatNumberInputCOP } from "@/lib/utils";
+import { useProductoStore } from "@/store/poducto.store";
+import { ProductoDto } from "@/modules/productos/types/productos";
+import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
     barcode: z.string().min(1, { message: "El código de barras es requerido" }),
@@ -64,6 +67,8 @@ export default function DialogProducto({
 
     const { categorias: dataCategorias, mutation } = useCategorias();
     const { mutationProducto } = useProductos()
+    const productoStore = useProductoStore()
+    const queryClient = useQueryClient();
 
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -144,8 +149,10 @@ export default function DialogProducto({
     }
 
     function onSubmit(data: z.infer<typeof formSchema>) {
+
         setIsLoading(true);
-        mutationProducto.mutate({
+
+        const newProductoDto: ProductoDto = {
             barcode: data.barcode,
             nombre: data.nombre,
             categoriaId: data.categoria.id,
@@ -154,9 +161,11 @@ export default function DialogProducto({
             cantidad: data.cantidad,
             costo: parseInt(data.costo.toString().replace(/\./g, ''), 10),
             precio: parseInt(data.precio.toString().replace(/\./g, ''), 10),
-
-        }, {
+        }
+        
+        mutationProducto.mutate(newProductoDto, {
             onSuccess: (data) => {
+                queryClient.invalidateQueries({ queryKey: ["productos"] });
                 const newProductos: Productos = {
                     id: data.id,
                     nombre: data.nombre,
@@ -173,8 +182,8 @@ export default function DialogProducto({
                     createdAt: data.createdAt,
                     updatedAt: data.updatedAt,
                 }
+                productoStore.addProducto(newProductos);
                 toast.success(`Producto "${data.nombre}" creado con éxito`);
-                // notify parent (if provided) so it can add the new product to the list/table
                 if (onCreated) onCreated(newProductos);
                 form.reset();
                 setOpen(false);
@@ -182,9 +191,11 @@ export default function DialogProducto({
             onError: (error) => {
                 console.error('Error al crear producto', error);
                 toast.error("No se pudo crear el producto", { description: error.message });
+            },
+            onSettled: () => {
+                setIsLoading(false);
             }
         })
-        setIsLoading(false);
 
     }
 

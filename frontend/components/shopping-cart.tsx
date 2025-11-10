@@ -4,15 +4,13 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import { Productos } from "@/config/app.interface"
+import { formatCurrency, formatNumberInputCOP } from "@/lib/utils"
 import { Trash2, Plus, Minus, CarIcon as CartIcon, CreditCard } from "lucide-react"
 import { useState } from "react"
 
-interface CartItem {
-  id: string
-  name: string
-  price: number
-  quantity: number
-  image?: string
+interface CartItem extends Productos  {
+  cantidad: number
 }
 
 interface ShoppingCartProps {
@@ -25,7 +23,7 @@ export function ShoppingCart({ items, onUpdateQuantity, onClear }: ShoppingCartP
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash")
   const [cashReceived, setCashReceived] = useState("")
 
-  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const subtotal = items.reduce((sum, item) => sum + item.precio * item.cantidad, 0)
   const tax = subtotal * 0.16 // 16% IVA
   const total = subtotal + tax
 
@@ -56,7 +54,7 @@ export function ShoppingCart({ items, onUpdateQuantity, onClear }: ShoppingCartP
             <CartIcon className="h-5 w-5 text-foreground" />
             <h2 className="text-lg font-semibold text-foreground">Carrito</h2>
             <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-              {items.reduce((sum, item) => sum + item.quantity, 0)}
+              {items.reduce((sum, item) => sum + item.cantidad, 0)}
             </span>
           </div>
           {items.length > 0 && (
@@ -81,8 +79,8 @@ export function ShoppingCart({ items, onUpdateQuantity, onClear }: ShoppingCartP
               <Card key={item.id} className="p-3">
                 <div className="mb-2 flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="text-sm font-medium leading-tight text-foreground">{item.name}</h3>
-                    <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
+                    <h3 className="text-sm font-medium leading-tight text-foreground">{item.nombre}</h3>
+                    <p className="text-sm text-muted-foreground">${ formatCurrency(item.precio)}</p>
                   </div>
                   <Button
                     variant="ghost"
@@ -99,21 +97,21 @@ export function ShoppingCart({ items, onUpdateQuantity, onClear }: ShoppingCartP
                       variant="outline"
                       size="icon"
                       className="h-7 w-7 bg-transparent"
-                      onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                      onClick={() => onUpdateQuantity(item.id, item.cantidad - 1)}
                     >
                       <Minus className="h-3 w-3" />
                     </Button>
-                    <span className="w-8 text-center text-sm font-medium text-foreground">{item.quantity}</span>
+                    <span className="w-8 text-center text-sm font-medium text-foreground">{item.cantidad}</span>
                     <Button
                       variant="outline"
                       size="icon"
                       className="h-7 w-7 bg-transparent"
-                      onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                      onClick={() => onUpdateQuantity(item.id, item.cantidad + 1)}
                     >
                       <Plus className="h-3 w-3" />
                     </Button>
                   </div>
-                  <p className="text-base font-bold text-foreground">${(item.price * item.quantity).toFixed(2)}</p>
+                  <p className="text-base font-bold text-foreground">{formatCurrency((item.precio * item.cantidad))}</p>
                 </div>
               </Card>
             ))}
@@ -129,7 +127,7 @@ export function ShoppingCart({ items, onUpdateQuantity, onClear }: ShoppingCartP
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium text-foreground">${subtotal.toFixed(2)}</span>
+                <span className="font-medium text-foreground">{formatCurrency(subtotal)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">IVA (16%)</span>
@@ -138,7 +136,7 @@ export function ShoppingCart({ items, onUpdateQuantity, onClear }: ShoppingCartP
               <Separator />
               <div className="flex justify-between">
                 <span className="text-lg font-semibold text-foreground">Total</span>
-                <span className="text-2xl font-bold text-foreground">${total.toFixed(2)}</span>
+                <span className="text-2xl font-bold text-foreground">{formatCurrency(total)}</span>
               </div>
             </div>
 
@@ -188,7 +186,7 @@ export function ShoppingCart({ items, onUpdateQuantity, onClear }: ShoppingCartP
 
             {/* Botón de cobrar */}
             <Button size="lg" className="w-full text-base font-semibold" onClick={handleCheckout}>
-              Cobrar ${total.toFixed(2)}
+              Cobrar {formatCurrency(total)}
             </Button>
           </div>
         </div>
