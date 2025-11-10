@@ -1,34 +1,34 @@
 import { ENDPOINTS } from "@/lib/endpoint/endpoints";
 import { VentasDto, VentasResponse } from "../type/ventas";
+import api from "@/api/axiosInstance";
 
 export const abrirCajon = async (): Promise<void> => {
-    const res = await fetch(`${ENDPOINTS.build(ENDPOINTS.CAJON.ABRIR)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-    });
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Error al abrir el cajón");
-    }
-    return;
+    const res = await api.post(`${ENDPOINTS.build(ENDPOINTS.CAJON.ABRIR)}`);
+
+    return res.data;
 };
 
 
 export const crearVentas = async (body: VentasDto): Promise<VentasResponse> => {
 
-    const res = await fetch(`${ENDPOINTS.build(ENDPOINTS.VENTAS.CREAR_VENTAS)}`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-    })
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Error al registar la venta");
-    }
-    return res.json();
+    const res = await api.post(`${ENDPOINTS.build(ENDPOINTS.VENTAS.CREAR_VENTAS)}`, body);
 
+    return res.data;
+}
+
+export const obtenerReporteVentas = async (fechaInicial: Date, fechaFinal: Date): Promise<any> => {
+
+    console.log(fechaInicial, fechaFinal);    
+
+    const res = await api.get(`${ENDPOINTS.build(ENDPOINTS.VENTAS.REPORTE_VENTAS)}`,{
+        params: {
+            fechaInicial: fechaInicial.toISOString().split('T')[0],
+            fechaFinal: fechaFinal.toISOString().split('T')[0],
+        }
+    });
+    console.log(res.data);
+    
+    return res.data;
 }
 
 

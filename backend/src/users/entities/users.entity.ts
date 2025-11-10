@@ -31,6 +31,7 @@ export class Users {
   @OneToMany(() => Venta, ventas => ventas.usuario)
   ventas: Venta[];
 
+  @Column({ nullable: true })
   @Exclude()
   refreshToken: string;
 

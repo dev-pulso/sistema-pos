@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { ControllerRenderProps, useForm } from "react-hook-form";
 import { Package, Barcode, Layers, DollarSign, Hash, ChevronsUpDown, Check } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 
@@ -21,7 +22,6 @@ import useProductos from "@/modules/productos/hooks/useProductos";
 import { cn, formatNumberInputCOP } from "@/lib/utils";
 import { useProductoStore } from "@/store/poducto.store";
 import { ProductoDto } from "@/modules/productos/types/productos";
-import { useQueryClient } from "@tanstack/react-query";
 
 const formSchema = z.object({
     barcode: z.string().min(1, { message: "El código de barras es requerido" }),
@@ -48,7 +48,6 @@ export default function DialogProducto({
     editingProduct: Productos | null;
     onCreated?: (producto: Productos) => void;
 }) {
-    console.log('editingProduct', editingProduct);
     const units = [
         { value: 'unidad', label: 'Unidad' },
         { value: 'g', label: 'Gramos (g)' },
@@ -399,7 +398,7 @@ export default function DialogProducto({
                                                 )}
                                             />
 
-                                            <FormField
+                                            {/* <FormField
                                                 control={form.control}
                                                 name="cantidad"
                                                 render={({ field }) => (
@@ -418,7 +417,7 @@ export default function DialogProducto({
                                                         </FormControl>
                                                     </FormItem>
                                                 )}
-                                            />
+                                            /> */}
                                             <FormField
                                                 control={form.control}
                                                 name="costo"

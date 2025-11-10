@@ -1,10 +1,10 @@
 import { ENDPOINTS } from "@/lib/endpoint/endpoints";
 import { ProductoDto, ProductoResponse } from "../types/productos";
+import api from "@/api/axiosInstance";
 
 export const getProductos = async (): Promise<ProductoResponse[]> => {
-    const response = await fetch(`${ENDPOINTS.build(ENDPOINTS.PRODUCTO.LISTAR)}`);
-    const data = await response.json();
-    return data;
+    const response = await api.get(`${ENDPOINTS.build(ENDPOINTS.PRODUCTO.LISTAR)}`);
+    return response.data;
 };
 
 export const createProducto = async (data: ProductoDto): Promise<ProductoResponse> => {
@@ -21,17 +21,9 @@ export const createProducto = async (data: ProductoDto): Promise<ProductoRespons
         costo: Number(data.costo),
     }
 
-    const res = await fetch(`${ENDPOINTS.build(ENDPOINTS.PRODUCTO.CREAR)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Error al crear producto");
-    }
-    return await res.json();
+    const res = await api.post(`${ENDPOINTS.build(ENDPOINTS.PRODUCTO.CREAR)}`, payload);
+    
+    return res.data;
 };
 
 

@@ -9,9 +9,9 @@ export class VentasController {
         private readonly ventasService: VentasService,
     ) { }
 
-    //@UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('jwt'))
     @Post()
-    async crearVenta(@Body() dto: CreateVentaDto, @Req() req) {
+    async crearVenta(@Body() dto: CreateVentaDto, @Req() req: any) {
         try {
             const usuarioId = req.user?.id
             const response = await this.ventasService.crearVenta(dto, usuarioId)
@@ -21,19 +21,20 @@ export class VentasController {
         }
     }
 
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     @Get()
     async reporteVentas(
-        @Query('fechaInicial') fechaInicial: string,
-        @Query('fechaFinal') fechaFinal: string,) {
+        @Query('fechaInicial') fechaInicial: Date,
+        @Query('fechaFinal') fechaFinal: Date,) {
         try {
-            const response = await this.ventasService.reporteVentas(
-                new Date(fechaInicial),
-                new Date(fechaFinal)
-            )
+            // Validar que las fechas estén presentes
+            fechaInicial = new Date(`${fechaInicial}:00:00:00`);
+            fechaFinal = new Date(`${fechaFinal}:23:59:59`);
+            const response = await this.ventasService.reporteVentas(fechaInicial, fechaFinal)
             return response
         } catch (error) {
-            throw Error(error)
+            console.log('Error en reporteVentas:', error);
+            throw new Error(error.message || 'Error al generar el reporte de ventas');
         }
     }
 

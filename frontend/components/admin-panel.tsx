@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Productos } from "@/config/app.interface"
 import ProductosCard from "./admin/productos-card"
 import { useProductoStore } from "@/store/poducto.store"
+import SalesDashboard from "./sales-dashboard"
 
 
 export function AdminPanel() {
@@ -96,6 +97,7 @@ export function AdminPanel() {
           <TabsList>
             <TabsTrigger value="products">Productos</TabsTrigger>
             <TabsTrigger value="sales">Ventas</TabsTrigger>
+            <TabsTrigger value="reports">Reportes</TabsTrigger>
           </TabsList>
 
           {/* Tab de Productos */}
@@ -138,6 +140,25 @@ export function AdminPanel() {
                 </Table>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          {/* Tab de Reportes */}
+          <TabsContent value="reports" className="space-y-4">
+            <SalesDashboard/>
+            {/* <Card>
+              <CardHeader>
+                <CardTitle>Reportes</CardTitle>
+                <CardDescription>Genera reportes detallados</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <ReportCard title="Ventas por Día" />
+                  <ReportCard title="Productos más Vendidos" />
+                  <ReportCard title="Productos con Bajo Stock" />
+                  <ReportCard title="Ventas por Mes" />
+                </div>
+              </CardContent>
+            </Card> */}
           </TabsContent>
         </Tabs>
       </div>

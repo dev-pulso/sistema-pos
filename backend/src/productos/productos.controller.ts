@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Param, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 import { ProductsService } from "./productos.services";
 import { CrearProductDto } from "./dto/productos.dto";
+import { AuthGuard } from "@nestjs/passport";
 
 @Controller('productos')
 export class ProductsController {
@@ -16,6 +17,7 @@ export class ProductsController {
     async findOne(id: string) {
         return this.productsService.buscarPorId(id);
     }
+    @UseGuards(AuthGuard('jwt'))
     @Post()
     async create(@Body() createProductDto: CrearProductDto) {
         return this.productsService.crear(createProductDto);

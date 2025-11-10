@@ -79,38 +79,46 @@ export class VentasService {
     }
 
     async reporteVentas(fechaInicial: Date, fechaFinal: Date) {
-        const ventas = await this.ventaRepository.find({
-            where: {
-                createdAt: Between(fechaInicial, fechaFinal),
-            },
-            relations: ['usuario', 'detalles', 'detalles.producto'],
-            order: {
-                createdAt: 'DESC',
-            },
-        });
 
-        const resumen = {
-            totalVentas: ventas.length,
-            montoTotal: ventas.reduce((sum, venta) => sum + Number(venta.total), 0),
-            productosVendidos: await this.obtenerProductosVendidos(ventas),
-            ventas: ventas.map(venta => ({
-                id: venta.id,
-                fecha: venta.createdAt,
-                total: venta.total,
-                detalles: venta.detalles.map(detalle => ({
-                    producto: detalle.producto.nombre,
-                    cantidad: detalle.cantidad,
-                    precioUnitario: detalle.precioUnitario,
-                    subtotal: detalle.subtotal,
+        console.log('Fechas:', fechaInicial, fechaFinal);
+        try {
+            const ventas = await this.ventaRepository.find({
+                where: {
+                    createdAt: Between(fechaInicial, fechaFinal),
+                },
+                relations: ['usuario', 'detalles', 'detalles.producto'],
+                order: {
+                    createdAt: 'DESC',
+                },
+            });
+            console.log('Ventas encontradas:', ventas.length);
+            const resumen = {
+                totalVentas: ventas.length,
+                montoTotal: ventas.reduce((sum, venta) => sum + Number(venta.total), 0),
+                productosVendidos: await this.obtenerProductosVendidos(ventas),
+                ventas: ventas.map(venta => ({
+                    id: venta.id,
+                    fecha: venta.createdAt,
+                    total: venta.total,
+                    detalles: venta.detalles.map(detalle => ({
+                        producto: detalle.producto.nombre,
+                        cantidad: detalle.cantidad,
+                        precioUnitario: detalle.precioUnitario,
+                        subtotal: detalle.subtotal,
+                    })),
                 })),
-            })),
-        };
+            };
 
-        return resumen;
+            return resumen;
+
+        } catch (error) {
+            console.log('Error al generar el reporte de ventas:', error.message);
+            throw new Error(error.message || 'Error al generar el reporte de ventas');
+
+        }
+
     }
-
-
-
+    
     private async obtenerProductosVendidos(ventas: Venta[]) {
         const productosMap = new Map();
 

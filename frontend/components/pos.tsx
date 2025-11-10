@@ -42,7 +42,9 @@ import { toast } from "sonner"
 
 
 interface CartItem extends Productos {
-    cantidad: number
+    cantidad: number,
+    total?: number,
+    pesoEnGramos?: number,
 }
 
 export default function POS() {
@@ -102,24 +104,24 @@ export default function POS() {
 
     }
 
-    const calcularPrecioUnidadMedida = (producto: Productos, cantidad: number, unidadMedida: string) => {
+    const calcularPrecioUnidadMedida = (producto: Productos, cantidad: number) => {
         const precioBase = producto.precio
-        const base = producto.unidadMedida || "unidad"
+        // const base = producto.unidadMedida || "unidad"
 
-        // Solo convertir si el base es kg
-        if (base === "kg") {
-            switch (unidadMedida) {
-                case "kg":
-                    return precioBase * cantidad
-                case "g":
-                    return precioBase * (cantidad / 1000)
-                case "lb":
-                    return precioBase * (cantidad * 0.453592)
-                default:
-                    return precioBase * cantidad
-            }
-        }
-        return precioBase * cantidad
+        // // Solo convertir si el base es kg
+        // if (base === "kg") {
+        //     switch (unidadMedida) {
+        //         case "kg":
+        //             return precioBase * cantidad
+        //         case "g":
+        //             return precioBase * (cantidad / 1000)
+        //         case "lb":
+        //             return precioBase * (cantidad * 0.453592)
+        //         default:
+        //             return precioBase * cantidad
+        //     }
+        // }
+        return precioBase * (cantidad / 1000)
     }
 
     // Agregar producto (si aplica muestra modal)
@@ -157,15 +159,26 @@ export default function POS() {
         const cantidadNum = parseFloat(cantidad)
         if (isNaN(cantidadNum) || cantidadNum <= 0) return
 
+
+        const precioPorGram = calcularPrecioUnidadMedida(selectedProduct, cantidadNum)
+        const precioCalculado = selectedProduct.precio * (cantidadNum / 1000)
+
         const existing = cart.find(p => p.id === selectedProduct.id)
         if (existing) {
             setCart(prev =>
                 prev.map(p =>
-                    p.id === selectedProduct.id ? { ...p, cantidad: cantidadNum } : p
+                    p.id === selectedProduct.id
+                        ? { ...p, pesoEnGramos: cantidadNum, total: precioCalculado }
+                        : p
                 )
-            )
+            );
         } else {
-            setCart(prev => [...prev, { ...selectedProduct, cantidad: cantidadNum }])
+            setCart(prev => [...prev, {
+                ...selectedProduct,
+                cantidad: 1,
+                pesoEnGramos: cantidadNum,
+                total: precioCalculado,
+            }])
         }
 
         setIsDialogOpen(false)
@@ -209,7 +222,12 @@ export default function POS() {
     ]
 
 
-    let subtotal = cart.reduce((sum, p) => sum + p.precio * p.cantidad, 0)
+    let subtotal = cart.reduce((sum, p) => {
+        if (p.pesoEnGramos) {
+            return sum + (p.precio * p.pesoEnGramos) / 1000
+        }
+        return sum + (p.precio * p.cantidad)
+    }, 0)
     const iva = subtotal * 0.16
     const discount = subtotal * descuento / 100
     let total = subtotal - discount
@@ -242,7 +260,7 @@ export default function POS() {
                 toast.success('Se registro la venta')
                 setCart([])
                 total = 0
-                subtotal= 0
+                subtotal = 0
                 setCashReceived('')
             },
             onError(error) {
@@ -315,35 +333,52 @@ export default function POS() {
                             <div className="flex justify-between items-center">
                                 <div>
                                     <p className="font-medium">{item.nombre}</p>
+
+                                    {
+                                        item.pesoEnGramos ? (
+                                            <p className="text-sm text-gray-500">
+                                                {item.pesoEnGramos} g × {formatCurrency(item.total ?? 0)}
+                                            </p>
+                                        )
+                                            : (
+                                                <p className="text-sm text-gray-500">
+                                                    {item.cantidad} {item.unidadMedida ?? "unid"} × {formatCurrency(item.precio)}
+                                                </p>
+                                            )
+                                    }
+                                    {/* <p className="font-medium">{item.nombre}</p>
                                     <p className="text-sm text-gray-500">
                                         {item.cantidad} {item.unidadMedida ?? "unid"} × ${item.precio.toLocaleString()}
-                                    </p>
+                                    </p> */}
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => updateCart(item, item.cantidad - 1)}
-                                        disabled={item.cantidad <= 1}
-                                        className="px-2 py-1 border rounded text-gray-600 hover:bg-gray-100"
-                                    >–</button>
+                                    {!item.pesoEnGramos && (
+                                        <>
+                                            <button
+                                                onClick={() => updateCart(item, item.cantidad - 1)}
+                                                disabled={item.cantidad <= 1}
+                                                className="px-2 py-1 border rounded text-gray-600 hover:bg-gray-100"
+                                            >–</button>
 
-                                    <Input
-                                        type="number"
-                                        min="1"
-                                        onFocus={() => setIsEditingQuantity(true)}
-                                        onBlur={() => setIsEditingQuantity(false)}
-                                        value={item.cantidad}
-                                        onChange={(e) => {
-                                            const val = parseFloat(e.target.value)
-                                            if (!isNaN(val) && val >= 1) {
-                                                updateCart(item, val)
-                                            }
-                                        }}
-                                        className="w-16 text-center"
-                                    />
-                                    <button
-                                        onClick={() => updateCart(item, item.cantidad + 1)}
-                                        className="px-2 py-1 border rounded text-gray-600 hover:bg-gray-100"
-                                    >+</button>
+                                            <Input
+                                                type="number"
+                                                min="1"
+                                                onFocus={() => setIsEditingQuantity(true)}
+                                                onBlur={() => setIsEditingQuantity(false)}
+                                                value={item.cantidad}
+                                                onChange={(e) => {
+                                                    const val = parseFloat(e.target.value)
+                                                    if (!isNaN(val) && val >= 1) {
+                                                        updateCart(item, val)
+                                                    }
+                                                }}
+                                                className="w-16 text-center"
+                                            />
+                                            <button
+                                                onClick={() => updateCart(item, item.cantidad + 1)}
+                                                className="px-2 py-1 border rounded text-gray-600 hover:bg-gray-100"
+                                            >+</button>
+                                        </>)}
                                     <button
                                         onClick={() => removeFromCart(item.id)}
                                         className="text-red-500 hover:text-red-700"
@@ -422,7 +457,7 @@ export default function POS() {
                     </DialogHeader>
 
                     <div className="space-y-3">
-                        <Label>Cantidad</Label>
+                        <Label>Gramos</Label>
                         <Input
                             type="number"
                             min="0"
@@ -430,8 +465,7 @@ export default function POS() {
                             onChange={(e) => setCantidad(e.target.value)}
                         />
 
-                        <Label>Unidad de medida</Label>
-                        <Select value={unidadMedida} onValueChange={setUnidadMedida}>
+                        {/* <Select value={unidadMedida} onValueChange={setUnidadMedida}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Seleccionar unidad" />
                             </SelectTrigger>
@@ -441,12 +475,12 @@ export default function POS() {
                                 <SelectItem value="g">Gramos</SelectItem>
                                 <SelectItem value="lb">Libras</SelectItem>
                             </SelectContent>
-                        </Select>
+                        </Select> */}
 
                         {
                             selectedProduct &&
                             <p className="mt-3 text-green-700 font-medium">
-                                Precio: ${calcularPrecioUnidadMedida(selectedProduct, parseFloat(cantidad || "0"), unidadMedida).toLocaleString()}
+                                Precio:{formatCurrency(calcularPrecioUnidadMedida(selectedProduct, parseFloat(cantidad || "0")))}
                             </p>
                         }
 
