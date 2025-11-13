@@ -17,6 +17,7 @@ import { Productos } from "@/config/app.interface"
 import ProductosCard from "./admin/productos-card"
 import { useProductoStore } from "@/store/poducto.store"
 import SalesDashboard from "./sales-dashboard"
+import VentasCard from "./admin/ventas-card"
 
 
 export function AdminPanel() {
@@ -108,38 +109,7 @@ export function AdminPanel() {
 
           {/* Tab de Ventas */}
           <TabsContent value="sales" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Historial de Ventas</CardTitle>
-                <CardDescription>Registro de todas las transacciones</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID Venta</TableHead>
-                      <TableHead>Fecha y Hora</TableHead>
-                      <TableHead className="text-right">Items</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
-                      <TableHead>Estado</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {productos.map((sale) => (
-                      <TableRow key={sale.id}>
-                        <TableCell className="font-medium">{sale.id}</TableCell>
-                        <TableCell>{sale.createdAt.toLocaleString()}</TableCell>
-                        <TableCell className="text-right">{sale.cantidad}</TableCell>
-                        <TableCell className="text-right font-medium">${sale.costo}</TableCell>
-                        <TableCell>
-                          <Badge variant="default">{sale.isActive ? "Activo" : "Inactivo"}</Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <VentasCard/>
           </TabsContent>
 
           {/* Tab de Reportes */}

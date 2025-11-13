@@ -11,6 +11,7 @@ import { ClientesModule } from './clientes/clientes.module';
 import { CategoriasModule } from './categorias/categorias.module';
 import { AuthModule } from './auth/auth.module';
 import { CajonModule } from './cajon/cajon.module';
+import { PrinterModule } from './printer/printer.module';
 
 @Module({
   imports: [
@@ -40,7 +41,8 @@ import { CajonModule } from './cajon/cajon.module';
     UsersModule,
     VentasModule,
     AuthModule,
-    CajonModule
+    CajonModule,
+    PrinterModule
   ],
   controllers: [AppController],
   providers: [AppService],

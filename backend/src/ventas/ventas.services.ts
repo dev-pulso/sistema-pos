@@ -80,7 +80,6 @@ export class VentasService {
 
     async reporteVentas(fechaInicial: Date, fechaFinal: Date) {
 
-        console.log('Fechas:', fechaInicial, fechaFinal);
         try {
             const ventas = await this.ventaRepository.find({
                 where: {
@@ -91,7 +90,6 @@ export class VentasService {
                     createdAt: 'DESC',
                 },
             });
-            console.log('Ventas encontradas:', ventas.length);
             const resumen = {
                 totalVentas: ventas.length,
                 montoTotal: ventas.reduce((sum, venta) => sum + Number(venta.total), 0),
@@ -100,6 +98,7 @@ export class VentasService {
                     id: venta.id,
                     fecha: venta.createdAt,
                     total: venta.total,
+                    vendidoPor: venta.usuario.nombres,
                     detalles: venta.detalles.map(detalle => ({
                         producto: detalle.producto.nombre,
                         cantidad: detalle.cantidad,
@@ -118,7 +117,7 @@ export class VentasService {
         }
 
     }
-    
+
     private async obtenerProductosVendidos(ventas: Venta[]) {
         const productosMap = new Map();
 
@@ -142,6 +141,50 @@ export class VentasService {
 
         return Array.from(productosMap.values())
             .sort((a, b) => b.montoTotal - a.montoTotal);
+    }
+
+    async reporteXdia() {
+        try {
+
+            const now = new Date()
+
+            const inicioDia = new Date(now.setHours(0, 0, 0, 0));
+            const finDia = new Date(now.setHours(23, 59, 59, 999));
+            const ventas = await this.ventaRepository.find({
+                where: {
+                    createdAt: Between(inicioDia, finDia),
+                },
+                relations: ['usuario', 'detalles', 'detalles.producto'],
+                order: {
+                    createdAt: 'DESC',
+                }
+            })
+
+
+            const resumen = {
+                totalVentas: ventas.length,
+                montoTotal: ventas.reduce((sum, venta) => sum + Number(venta.total), 0),
+                productosVendidos: await this.obtenerProductosVendidos(ventas),
+                ventas: ventas.map(venta => ({
+                    id: venta.id,
+                    fecha: venta.createdAt,
+                    total: venta.total,
+                    vendidoPor: venta.usuario.nombres,
+                    detalles: venta.detalles.map(detalle => ({
+                        producto: detalle.producto.nombre,
+                        cantidad: detalle.cantidad,
+                        precioUnitario: detalle.precioUnitario,
+                        subtotal: detalle.subtotal,
+                    })),
+                })),
+            };
+
+            return resumen;
+
+        } catch (error) {
+            console.log(error);
+            throw new Error(error)
+        }
     }
 }
 

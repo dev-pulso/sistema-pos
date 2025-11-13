@@ -27,11 +27,21 @@ export class VentasController {
         @Query('fechaInicial') fechaInicial: Date,
         @Query('fechaFinal') fechaFinal: Date,) {
         try {
-            // Validar que las fechas estén presentes
             fechaInicial = new Date(`${fechaInicial}:00:00:00`);
             fechaFinal = new Date(`${fechaFinal}:23:59:59`);
             const response = await this.ventasService.reporteVentas(fechaInicial, fechaFinal)
             return response
+        } catch (error) {
+            throw new Error(error.message || 'Error al generar el reporte de ventas');
+        }
+    }
+    @UseGuards(AuthGuard('jwt'))
+    @Get('dia')
+    async reporteXdia() {
+        try {
+            const response = await this.ventasService.reporteXdia()
+            return response
+
         } catch (error) {
             console.log('Error en reporteVentas:', error);
             throw new Error(error.message || 'Error al generar el reporte de ventas');
