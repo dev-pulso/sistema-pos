@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post, UseGuards } from "@nestjs/common";
 import { ProductsService } from "./productos.services";
 import { CrearProductDto } from "./dto/productos.dto";
 import { AuthGuard } from "@nestjs/passport";
@@ -18,6 +18,7 @@ export class ProductsController {
         return this.productsService.buscarPorId(id);
     }
     @UseGuards(AuthGuard('jwt'))
+    @HttpCode(HttpStatus.CREATED)
     @Post()
     async create(@Body() createProductDto: CrearProductDto) {
         return this.productsService.crear(createProductDto);
@@ -25,5 +26,9 @@ export class ProductsController {
     @Post(':id/stock')
     async updateStock(@Body() updateStockDto: { stock: number }, @Param('id') id: string) {
         return this.productsService.actualizarStock(id, updateStockDto.stock);
+    }
+    @Post(':id')
+    async update(@Body() updateProductDto: CrearProductDto, @Param('id') id: string) {
+        return this.productsService.actualizar(id, updateProductDto);
     }
 }

@@ -61,6 +61,7 @@ export default function ProductosCard({ producto, isDialogOpen, setIsDialogOpen 
                             setEditingProduct(null);
                             toast.success(`Producto "${newP.nombre}" agregado`);
                         }}
+
                     />
                 </div>
             </CardHeader>

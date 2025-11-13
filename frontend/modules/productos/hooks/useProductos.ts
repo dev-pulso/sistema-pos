@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { ProductoDto, ProductoResponse } from "../types/productos";
-import { createProducto, getProductos } from "../services/productos.service";
+import { createProducto, getProductos, updateProducto } from "../services/productos.service";
 import { Productos } from "@/config/app.interface";
 import { useProductoStore } from "@/store/poducto.store";
 
@@ -19,6 +19,11 @@ export default function useProductos() {
     const mutationProducto = useMutation<ProductoResponse, Error, ProductoDto>({
         mutationFn: createProducto,
     });
+    const mutationActualizarProducto = useMutation<ProductoResponse, Error, ProductoDto>({
+        mutationFn: updateProducto,
+    });
+
+
 
     const productos: Productos[] = useMemo(() => {
         if (!data) return [];
@@ -46,5 +51,6 @@ export default function useProductos() {
         isLoading,
         error,
         mutationProducto,
+        mutationActualizarProducto,
     }
 }

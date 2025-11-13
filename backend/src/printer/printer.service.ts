@@ -9,9 +9,7 @@ export class PrinterService {
     private escpos: any;
     private USB: any;
 
-    constructor() {
-        this.escpos = require('escpos');
-        this.USB = require('escpos-usb');
+    constructor() {        
         // intenta asignar solo si existe
         try { this.escpos.USB = this.USB; } catch (e) { /* noop */ }
     }

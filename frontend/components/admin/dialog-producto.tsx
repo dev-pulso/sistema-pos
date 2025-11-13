@@ -22,6 +22,7 @@ import useProductos from "@/modules/productos/hooks/useProductos";
 import { cn, formatNumberInputCOP } from "@/lib/utils";
 import { useProductoStore } from "@/store/poducto.store";
 import { ProductoDto } from "@/modules/productos/types/productos";
+import { AxiosError } from "axios";
 
 const formSchema = z.object({
     barcode: z.string().min(1, { message: "El código de barras es requerido" }),
@@ -65,7 +66,7 @@ export default function DialogProducto({
     const [value, setValue] = useState("");
 
     const { categorias: dataCategorias, mutation } = useCategorias();
-    const { mutationProducto } = useProductos()
+    const { mutationProducto, mutationActualizarProducto } = useProductos()
     const productoStore = useProductoStore()
     const queryClient = useQueryClient();
 
@@ -150,51 +151,116 @@ export default function DialogProducto({
     function onSubmit(data: z.infer<typeof formSchema>) {
 
         setIsLoading(true);
+        if (editingProduct) {
 
-        const newProductoDto: ProductoDto = {
-            barcode: data.barcode,
-            nombre: data.nombre,
-            categoriaId: data.categoria.id,
-            unidadMedida: data.unidadMedida,
-            stock: data.stock,
-            cantidad: data.cantidad,
-            costo: parseInt(data.costo.toString().replace(/\./g, ''), 10),
-            precio: parseInt(data.precio.toString().replace(/\./g, ''), 10),
-        }
-        
-        mutationProducto.mutate(newProductoDto, {
-            onSuccess: (data) => {
-                queryClient.invalidateQueries({ queryKey: ["productos"] });
-                const newProductos: Productos = {
-                    id: data.id,
-                    nombre: data.nombre,
-                    precio: data.precio,
-                    costo: data.costo,
-                    stock: data.stock,
-                    barcode: data.barcode,
-                    descripcion: data.descripcion,
-                    sku: data.sku,
-                    unidadMedida: data.unidadMedida,
-                    cantidad: Number(data.cantidad),
-                    isActive: data.isActive,
-                    categoria: data.categoria,
-                    createdAt: data.createdAt,
-                    updatedAt: data.updatedAt,
-                }
-                productoStore.addProducto(newProductos);
-                toast.success(`Producto "${data.nombre}" creado con éxito`);
-                if (onCreated) onCreated(newProductos);
-                form.reset();
-                setOpen(false);
-            },
-            onError: (error) => {
-                console.error('Error al crear producto', error);
-                toast.error("No se pudo crear el producto", { description: error.message });
-            },
-            onSettled: () => {
-                setIsLoading(false);
+            const productoEditado: ProductoDto = {
+                id: editingProduct.id,
+                barcode: data.barcode,
+                nombre: data.nombre,
+                categoriaId: data.categoria.id,
+                unidadMedida: data.unidadMedida,
+                stock: data.stock,
+                cantidad: data.cantidad,
+                costo: parseInt(data.costo.toString().replace(/\./g, ''), 10),
+                precio: parseInt(data.precio.toString().replace(/\./g, ''), 10),
             }
-        })
+            mutationActualizarProducto.mutate(productoEditado, {
+                onSuccess: (data) => {
+                    const newProductos: Productos = {
+                        id: data.id,
+                        nombre: data.nombre,
+                        precio: data.precio,
+                        costo: data.costo,
+                        stock: data.stock,
+                        barcode: data.barcode,
+                        descripcion: data.descripcion,
+                        sku: data.sku,
+                        unidadMedida: data.unidadMedida,
+                        cantidad: Number(data.cantidad),
+                        isActive: data.isActive,
+                        categoria: data.categoria,
+                        createdAt: data.createdAt,
+                        updatedAt: data.updatedAt,
+                    }
+                    productoStore.addProducto(newProductos);
+                    toast.success(`Producto "${data.nombre}" actualizado con éxito`);
+                    form.reset();
+                    setOpen(false);
+                },
+                onError: (error: any) => {
+                    setIsLoading(false);
+                    const data = error?.response?.data;
+                    const messages = Array.isArray(data?.message)
+                        ? data.message
+                        : [data?.message || "Error al actualizar el producto"];
+                    toast.error("Error al actualizar el producto", { description: messages.join("\n") });
+                },
+                onSettled: () => {
+                    setIsLoading(false);
+                },
+            })
+
+
+        } else {
+            const newProductoDto: ProductoDto = {
+                barcode: data.barcode,
+                nombre: data.nombre,
+                categoriaId: data.categoria.id,
+                unidadMedida: data.unidadMedida,
+                stock: data.stock,
+                cantidad: data.cantidad,
+                costo: parseInt(data.costo.toString().replace(/\./g, ''), 10),
+                precio: parseInt(data.precio.toString().replace(/\./g, ''), 10),
+            }
+
+            mutationProducto.mutate(newProductoDto, {
+                onSuccess: (data) => {
+                    queryClient.invalidateQueries({ queryKey: ["productos"] });
+                    const newProductos: Productos = {
+                        id: data.id,
+                        nombre: data.nombre,
+                        precio: data.precio,
+                        costo: data.costo,
+                        stock: data.stock,
+                        barcode: data.barcode,
+                        descripcion: data.descripcion,
+                        sku: data.sku,
+                        unidadMedida: data.unidadMedida,
+                        cantidad: Number(data.cantidad),
+                        isActive: data.isActive,
+                        categoria: data.categoria,
+                        createdAt: data.createdAt,
+                        updatedAt: data.updatedAt,
+                    }
+                    productoStore.addProducto(newProductos);
+                    toast.success(`Producto "${data.nombre}" creado con éxito`);
+                    if (onCreated) onCreated(newProductos);
+                    form.reset();
+                    setOpen(false);
+                },
+                onError: (error: any) => {
+                    setIsLoading(false);
+                    const data = error?.response?.data;
+                    const messages = Array.isArray(data?.message)
+                        ? data.message
+                        : data?.message
+                            ? [data.message]
+                            : ["Ocurrió un error al crear el producto"];
+                    toast.error("No se pudo crear el producto", {
+                        description: (
+                            <div>
+                                {messages.map((m: string, i: number) => (
+                                    <div key={i}>{m}</div>
+                                ))}
+                            </div>
+                        )
+                    })
+                },
+                onSettled: () => {
+                    setIsLoading(false);
+                }
+            })
+        }
 
     }
 
@@ -236,6 +302,7 @@ export default function DialogProducto({
                                                         </FormLabel>
                                                         <FormControl>
                                                             <Input
+                                                                disabled={editingProduct ? true : false}
                                                                 {...field}
                                                                 onKeyDown={(e) => {
                                                                     if (e.key === 'Enter') {
@@ -476,10 +543,10 @@ export default function DialogProducto({
                         <DialogFooter>
                             <Button type="button" onClick={limpiarFormulario}>Limpiar formulario</Button>
 
-                            {
-                                isLoading && <Spinner />
-                            }
-                            <Button>{editingProduct ? 'Guardar cambios' : 'Crear productos'}</Button>
+
+                            <Button>
+                                {isLoading && <Spinner />}
+                                {editingProduct ? 'Guardar cambios' : 'Crear productos'}</Button>
                         </DialogFooter>
                     </form>
                 </Form>
