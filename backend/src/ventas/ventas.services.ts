@@ -30,6 +30,7 @@ export class VentasService {
             const venta = this.ventaRepository.create({
                 total: createVentaDto.total,
                 usuarioId,
+                cashRecibido: createVentaDto.cashRecibido,
             });
 
             await queryRunner.manager.save(venta);
@@ -42,15 +43,30 @@ export class VentasService {
                     throw new NotFoundException(`Producto con ID ${detalle.productoId} no encontrado`);
                 }
 
-                if (producto.stock < detalle.cantidad) {
-                    throw new Error(`Stock insuficiente para el producto ${producto.nombre}`);
+                const cantidad = Number(detalle.cantidad ?? 0);
+                const gramos = Number(detalle.gramos ?? 0);
+
+                if ((cantidad <= 0) && (gramos <= 0)) {
+                    throw new Error(`Debe especificar una cantidad o gramos para el producto ${producto.nombre}`);
+                }
+
+                // Validar stock según el tipo de venta
+                if (gramos > 0) {
+                    if (producto.stock < gramos) {
+                        throw new Error(`Stock insuficiente para el producto ${producto.nombre}`);
+                    }
+                } else {
+                    if (producto.stock < cantidad) {
+                        throw new Error(`Stock insuficiente para el producto ${producto.nombre}`);
+                    }
                 }
 
                 // Crear detalle de venta
                 const detalleVenta = this.detalleVentaRepository.create({
                     ventaId: venta.id,
                     productoId: detalle.productoId,
-                    cantidad: detalle.cantidad,
+                    ...(cantidad > 0 ? { cantidad } : {}),
+                    ...(gramos > 0 ? { gramos } : {}),
                     precioUnitario: detalle.precioUnitario,
                     subtotal: detalle.subtotal,
                 });
@@ -58,7 +74,7 @@ export class VentasService {
                 await queryRunner.manager.save(detalleVenta);
 
                 // Actualizar stock del producto
-                producto.stock -= detalle.cantidad;
+                producto.stock -= gramos > 0 ? gramos : cantidad;
                 await queryRunner.manager.save(producto);
             }
 
@@ -173,6 +189,7 @@ export class VentasService {
                     detalles: venta.detalles.map(detalle => ({
                         producto: detalle.producto.nombre,
                         cantidad: detalle.cantidad,
+                        gramos: detalle.gramos,
                         precioUnitario: detalle.precioUnitario,
                         subtotal: detalle.subtotal,
                     })),

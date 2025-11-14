@@ -21,8 +21,11 @@ export class DetalleVenta {
     @Column()
     ventaId: string;
 
-    @Column({ type: 'integer' })
-    cantidad: number;
+    @Column({ type: 'integer', nullable: true })
+    cantidad?: number;
+
+    @Column({ type: 'integer', nullable: true })
+    gramos?: number;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     precioUnitario: number;

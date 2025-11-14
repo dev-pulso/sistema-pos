@@ -7,8 +7,12 @@ export class DetalleVentaDto {
     productoId: string;
 
     @IsNumber()
-    @IsNotEmpty()
+    @IsOptional()
     cantidad: number;
+
+    @IsNumber()
+    @IsOptional()
+    gramos: number;
 
     @IsNumber()
     @IsNotEmpty()
@@ -17,6 +21,7 @@ export class DetalleVentaDto {
     @IsNumber()
     @IsNotEmpty()
     subtotal: number;
+    
 }
 
 export class CreateVentaDto {
@@ -28,4 +33,8 @@ export class CreateVentaDto {
     @IsNumber()
     @IsNotEmpty()
     total: number;
+
+    @IsNumber()
+    @IsNotEmpty()
+    cashRecibido: number;
 }

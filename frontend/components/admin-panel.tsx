@@ -18,12 +18,15 @@ import ProductosCard from "./admin/productos-card"
 import { useProductoStore } from "@/store/poducto.store"
 import SalesDashboard from "./sales-dashboard"
 import VentasCard from "./admin/ventas-card"
+import { useResportesXdia } from "@/modules/ventas/hooks/useReporteVentas"
+import { formatCurrency } from "@/lib/utils"
 
 
 export function AdminPanel() {
   const [editingProduct, setEditingProduct] = useState<Productos | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { productos, setProductos } = useProductoStore()
+  const data = useResportesXdia()
 
   // Estadísticas
   const totalSales = 0//sampleSales.reduce((sum, sale) => sum + sale.total, 0)
@@ -65,8 +68,17 @@ export function AdminPanel() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalSales.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">+12% vs ayer</p>
+              <div className="text-2xl font-bold">{formatCurrency(data.data?.montoTotal || 0)}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Total ventas del Día</CardTitle>
+              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{data.data?.totalVentas || 0}</div>
+              <p className="text-xs text-muted-foreground">Hoy</p>
             </CardContent>
           </Card>
 
@@ -81,16 +93,7 @@ export function AdminPanel() {
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium">Transacciones</CardTitle>
-              <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{0}</div>
-              <p className="text-xs text-muted-foreground">Hoy</p>
-            </CardContent>
-          </Card>
+          
         </div>
 
         {/* Tabs */}
@@ -109,7 +112,9 @@ export function AdminPanel() {
 
           {/* Tab de Ventas */}
           <TabsContent value="sales" className="space-y-4">
-            <VentasCard/>
+            {
+              data.data && <VentasCard reporteVentas={data.data}/>
+            }
           </TabsContent>
 
           {/* Tab de Reportes */}

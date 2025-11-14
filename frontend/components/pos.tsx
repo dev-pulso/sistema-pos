@@ -240,18 +240,29 @@ export default function POS() {
         const newDetalleVenta: DetalleVentas[] = []
 
         cart.map((venta) => {
-            const detalleVenta: DetalleVentas = {
-                productoId: venta.id,
-                cantidad: venta.cantidad,
-                precioUnitario: venta.precio,
-                subtotal: subtotal
-            }
-            newDetalleVenta.push(detalleVenta)
+            if(venta.pesoEnGramos){
+                const detalleVenta: DetalleVentas = {
+                    productoId: venta.id,
+                    gramos: venta.pesoEnGramos,
+                    precioUnitario: venta.precio,
+                    subtotal: (venta.precio * venta.pesoEnGramos) / 1000
+                }
+                newDetalleVenta.push(detalleVenta)
+            }else{
+                const detalleVenta: DetalleVentas = {
+                    productoId: venta.id,
+                    cantidad: venta.cantidad,
+                    precioUnitario: venta.precio,
+                    subtotal: venta.precio * venta.cantidad
+                }
+                newDetalleVenta.push(detalleVenta)
+            }            
         })
 
         const nuevaVenta: VentasDto = {
             detalles: newDetalleVenta,
-            total: total
+            total: total,
+            cashRecibido: cashAmount
         }
 
         mutationVentas.mutate(nuevaVenta, {
@@ -270,6 +281,10 @@ export default function POS() {
 
             },
         })
+    }
+
+    const convertirGramosAKg = (gramos: number) => {
+        return gramos / 1000;
     }
 
     return (
@@ -305,7 +320,7 @@ export default function POS() {
                                     <div className="flex items-center justify-between">
                                         <p className="text-lg font-bold text-primary">$ {formatNumberInputCOP(product.precio.toString())}</p>
                                         <Badge variant="secondary" className="text-xs">
-                                            {product.stock} unid.
+                                            { product.unidadMedida === 'kg' ? convertirGramosAKg(product.stock) + 'kg' : product.stock + 'unid.'}
                                         </Badge>
                                     </div>
                                 </Card>

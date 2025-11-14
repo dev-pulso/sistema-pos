@@ -1,10 +1,12 @@
 export interface VentasDto {
     detalles: DetalleVentas[]
     total: number
+    cashRecibido: number
 }
 export interface DetalleVentas {
     productoId: string;
-    cantidad: number;
+    gramos?: number;
+    cantidad?: number;
     precioUnitario: number;
     subtotal: number;
 }

@@ -13,6 +13,9 @@ export class Venta {
     @OneToMany(() => DetalleVenta, detalle => detalle.venta, { cascade: true })
     detalles: DetalleVenta[];
 
+    @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
+    cashRecibido: number;
+
     @CreateDateColumn()
     createdAt: Date;
 

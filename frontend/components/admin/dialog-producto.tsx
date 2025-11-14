@@ -171,7 +171,7 @@ export default function DialogProducto({
                         nombre: data.nombre,
                         precio: data.precio,
                         costo: data.costo,
-                        stock: data.stock,
+                        stock: convertirKgAGramos(data.stock),
                         barcode: data.barcode,
                         descripcion: data.descripcion,
                         sku: data.sku,
@@ -207,7 +207,7 @@ export default function DialogProducto({
                 nombre: data.nombre,
                 categoriaId: data.categoria.id,
                 unidadMedida: data.unidadMedida,
-                stock: data.stock,
+                stock: convertirKgAGramos(data.stock),
                 cantidad: data.cantidad,
                 costo: parseInt(data.costo.toString().replace(/\./g, ''), 10),
                 precio: parseInt(data.precio.toString().replace(/\./g, ''), 10),
@@ -221,7 +221,7 @@ export default function DialogProducto({
                         nombre: data.nombre,
                         precio: data.precio,
                         costo: data.costo,
-                        stock: data.stock,
+                        stock: convertirKgAGramos(data.stock),
                         barcode: data.barcode,
                         descripcion: data.descripcion,
                         sku: data.sku,
@@ -262,6 +262,10 @@ export default function DialogProducto({
             })
         }
 
+    }
+
+    const convertirKgAGramos = (kg: number) => {
+        return kg * 1000;
     }
 
 

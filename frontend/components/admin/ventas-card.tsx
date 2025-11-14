@@ -4,11 +4,13 @@ import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from ".
 import { useResportesXdia } from "@/modules/ventas/hooks/useReporteVentas";
 import { formatCurrency } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
-
-export default function VentasCard() {
+import { ReportesventasResponse } from "@/modules/ventas/type/ventas";
+interface VentaProps{
+    reporteVentas: ReportesventasResponse;
+}
+export default function VentasCard({reporteVentas}: VentaProps) {
     const [ventaSeleccionada, setVentaSeleccionada] = useState<any>(null);
-    const data = useResportesXdia()
-    console.log(data.data);
+    const data = reporteVentas
 
 
     return (
@@ -30,8 +32,8 @@ export default function VentasCard() {
                     </TableHeader>
 
                     <TableBody>
-                        {data.data?.totalVentas && data.data.totalVentas > 0 ? (
-                            data.data.ventas.map((venta) => (
+                        {data?.totalVentas && data.totalVentas > 0 ? (
+                            data.ventas.map((venta) => (
                                 <TableRow key={venta.id} onClick={() => setVentaSeleccionada(venta)}>
                                     <TableCell className="font-medium">{venta.id}</TableCell>
 
@@ -44,7 +46,7 @@ export default function VentasCard() {
                                     </TableCell>
 
                                     <TableCell className="text-right font-medium">
-                                        {formatCurrency(Number(data.data.montoTotal))}
+                                        {formatCurrency(Number(venta.total))}
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -72,7 +74,7 @@ export default function VentasCard() {
                     <div className="mt-4 space-y-2">
                         {ventaSeleccionada?.detalles.map((item: any, i: number) => (
                             <div key={i} className="flex justify-between border-b py-2">
-                                <span>{item.cantidad} × {item.producto}</span>
+                                <span>{item.cantidad ? item.cantidad : item.gramos + 'g'} × {item.producto}</span>
                                 <span>{formatCurrency(Number(item.subtotal))}</span>
                             </div>
                         ))}

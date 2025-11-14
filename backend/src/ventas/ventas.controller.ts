@@ -12,12 +12,14 @@ export class VentasController {
     @UseGuards(AuthGuard('jwt'))
     @Post()
     async crearVenta(@Body() dto: CreateVentaDto, @Req() req: any) {
+        console.log(dto);
+        
         try {
             const usuarioId = req.user?.id
             const response = await this.ventasService.crearVenta(dto, usuarioId)
             return response
         } catch (error) {
-            throw Error(error)
+            throw error
         }
     }
 
