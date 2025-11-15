@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
-import { ShoppingCart, Trash2 } from "lucide-react"
+import { SearchIcon, ShoppingCart, Trash2, X } from "lucide-react"
 import { Badge } from "./ui/badge"
 import { formatCurrency, formatNumberInputCOP, sleep } from "@/lib/utils"
 import { Separator } from "./ui/separator"
@@ -39,6 +39,7 @@ import { abrirCajon } from "@/modules/ventas/services/ventas.service"
 import { DetalleVentas, VentasDto } from "@/modules/ventas/type/ventas"
 import useVentas from "@/modules/ventas/hooks/useVentas"
 import { toast } from "sonner"
+import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group"
 
 
 interface CartItem extends Productos {
@@ -240,7 +241,7 @@ export default function POS() {
         const newDetalleVenta: DetalleVentas[] = []
 
         cart.map((venta) => {
-            if(venta.pesoEnGramos){
+            if (venta.pesoEnGramos) {
                 const detalleVenta: DetalleVentas = {
                     productoId: venta.id,
                     gramos: venta.pesoEnGramos,
@@ -248,7 +249,7 @@ export default function POS() {
                     subtotal: (venta.precio * venta.pesoEnGramos) / 1000
                 }
                 newDetalleVenta.push(detalleVenta)
-            }else{
+            } else {
                 const detalleVenta: DetalleVentas = {
                     productoId: venta.id,
                     cantidad: venta.cantidad,
@@ -256,7 +257,7 @@ export default function POS() {
                     subtotal: venta.precio * venta.cantidad
                 }
                 newDetalleVenta.push(detalleVenta)
-            }            
+            }
         })
 
         const nuevaVenta: VentasDto = {
@@ -288,12 +289,12 @@ export default function POS() {
     }
 
     return (
-        <div className="flex h-screen bg-gray-50">
+        <div className="flex h-screen">
             {/* IZQUIERDA */}
             <div className="flex-1 flex flex-col p-6">
                 <POSHeader />
 
-                <Input
+                {/* <Input
                     autoFocus
                     value={barcode}
                     onChange={async (e) => {
@@ -302,10 +303,24 @@ export default function POS() {
                     }}
                     placeholder="Escanea o escribe código de barras..."
                     className="text-lg p-3 mb-4"
-                />
+                /> */}
+                <InputGroup className="text-lg p-3 mb-4">
+                    <InputGroupInput placeholder="Buscar..." autoFocus
+                        value={barcode}
+                        onChange={async (e) => {
+                            const value = e.target.value
+                            handleScan(value)
+                        }} />
+                    <InputGroupAddon>
+                        <SearchIcon />
+                    </InputGroupAddon>
+                    <InputGroupAddon align="inline-end">
+                        <X />
+                    </InputGroupAddon>
+                </InputGroup>
 
-                <div className="flex flex-wrap gap-4">
-                    <ScrollArea className="flex-1">
+                <div className="flex flex-wrap gap-4 ">
+                    <ScrollArea className="flex-1 overflow-y-auto h-[calc(100vh-150px)]">
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                             {productosStore.map((product) => (
                                 <Card
@@ -320,7 +335,7 @@ export default function POS() {
                                     <div className="flex items-center justify-between">
                                         <p className="text-lg font-bold text-primary">$ {formatNumberInputCOP(product.precio.toString())}</p>
                                         <Badge variant="secondary" className="text-xs">
-                                            { product.unidadMedida === 'kg' ? convertirGramosAKg(product.stock) + 'kg' : product.stock + 'unid.'}
+                                            {product.unidadMedida === 'kg' ? convertirGramosAKg(product.stock) + 'kg' : product.stock + 'unid.'}
                                         </Badge>
                                     </div>
                                 </Card>
@@ -331,7 +346,7 @@ export default function POS() {
             </div>
 
             {/* DERECHA */}
-            <div className="w-[380px] bg-white p-6 border-l flex flex-col">
+            <div className="w-[380px] p-6 border-l flex flex-col">
                 <div className="flex items-center justify-between mb-4">
 
                     <h2 className="text-xl font-semibold mb-4">

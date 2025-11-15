@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { User, Settings, LogOut, Vegan, UserPlus } from "lucide-react"
+import { User, Settings, LogOut, Vegan, UserPlus, Sun, Moon } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -16,9 +16,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuthStore } from "@/store/auth.store";
 import { Rols } from "@/config/app.interface";
+import { useTheme } from "next-themes";
 
 export function POSHeader() {
   const { user, logout } = useAuthStore();
+   const { setTheme, theme } = useTheme()
   const router = useRouter();
   const [rol, setRol] = useState('')
 
@@ -101,6 +103,19 @@ export function POSHeader() {
                 </DropdownMenuItem>
               )
                 : null
+            }
+            {
+              theme === 'dark' ? (
+                <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('light')}>
+                  <Sun className="mr-2 h-4 w-4" />
+                  Modo Claro
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem className="cursor-pointer" onClick={() => setTheme('dark')}>
+                  <Moon className="mr-2 h-4 w-4" />
+                  Modo Oscuro
+                </DropdownMenuItem>
+              )
             }
             <DropdownMenuItem onClick={handleLogout}>
               <LogOut className="mr-2 h-4 w-4" />
