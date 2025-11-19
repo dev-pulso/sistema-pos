@@ -12,8 +12,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Granero el oriente',
-  description: 'Sistema de gestión para Granero el oriente',
+  title: 'Tienda Oriental',
+  description: 'Sistema de gestión para Tienda Oriental',
   generator: 'jpulido.dev',
   icons: {
     icon: [{

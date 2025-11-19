@@ -27,6 +27,19 @@ export class InvalidPrecioException extends HttpException {
         );
     }
 }
+export class InvalidCostoException extends HttpException {
+    constructor(costo: number) {
+        super(
+            {
+                statusCode: HttpStatus.BAD_REQUEST,
+                message: `El costo ${costo} no es válido. Debe ser mayor a 0`,
+                error: 'Invalid Cost',
+                code: 'INVALID_COST',
+            },
+            HttpStatus.BAD_REQUEST,
+        );
+    }
+}
 
 export class CategoriaNotFoundException extends HttpException {
     constructor(categoriaId: string) {

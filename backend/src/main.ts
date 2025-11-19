@@ -5,7 +5,10 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
   app.setGlobalPrefix('api');
   app.useGlobalPipes(new ValidationPipe({
     whitelist: true,
@@ -13,7 +16,8 @@ async function bootstrap() {
     transform: true,
   }));
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(8000, '0.0.0.0');
+
   console.log(`🚀 POS Backend corriendo en http://localhost:${process.env.PORT ?? 3000}`);
 }
 bootstrap();

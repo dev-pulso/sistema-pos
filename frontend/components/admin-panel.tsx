@@ -16,10 +16,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Productos } from "@/config/app.interface"
 import ProductosCard from "./admin/productos-card"
 import { useProductoStore } from "@/store/poducto.store"
-import SalesDashboard from "./sales-dashboard"
 import VentasCard from "./admin/ventas-card"
 import { useResportesXdia } from "@/modules/ventas/hooks/useReporteVentas"
 import { formatCurrency } from "@/lib/utils"
+import { SalesDashboard } from "./sales-dashboard"
 
 
 export function AdminPanel() {

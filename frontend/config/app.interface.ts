@@ -4,7 +4,7 @@ export enum Rols {
   CASHIER = "cashier",
 }
 
-export type UnidadMedida = 'unidad' | 'g' | 'kg' | 'ml' | 'lt';
+export type UnidadMedida = 'unidad'| 'kg';
 
 export interface Categorias{
     id: string;

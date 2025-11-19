@@ -1,6 +1,6 @@
 import { CategoriaResponse } from "@/modules/categorias/types/categoria";
 
-export type UnidadMedida = 'unidad' | 'g' | 'kg' | 'ml' | 'lt';
+export type UnidadMedida = 'unidad' | 'kg';
 
 export interface ProductoDto {
     id?: string;

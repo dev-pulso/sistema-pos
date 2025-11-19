@@ -13,7 +13,7 @@ export class VentasController {
     @Post()
     async crearVenta(@Body() dto: CreateVentaDto, @Req() req: any) {
         console.log(dto);
-        
+
         try {
             const usuarioId = req.user?.id
             const response = await this.ventasService.crearVenta(dto, usuarioId)
@@ -48,6 +48,28 @@ export class VentasController {
             console.log('Error en reporteVentas:', error);
             throw new Error(error.message || 'Error al generar el reporte de ventas');
         }
+    }
+
+    @Get('reportes/grafica-diaria')
+    reporteGraficaDiaria(
+        @Query('fechaInicial') fechaInicial: Date,
+        @Query('fechaFinal') fechaFinal: Date,) {
+        try {
+            fechaInicial = new Date(`${fechaInicial}:00:00:00`);
+            fechaFinal = new Date(`${fechaFinal}:23:59:59`);
+            const response = this.ventasService.reporteGraficaDiaria(
+                fechaInicial,
+                fechaFinal,
+            );
+            return response
+        } catch (error) {
+            throw new Error(error.message || 'Error al generar el reporte diario');
+        }
+    }
+
+    @Get('reportes/grafica-mensual')
+    reporteGraficaMensual(@Query('year') year: string) {
+        return this.ventasService.reporteGraficaMensual(Number(year));
     }
 
 

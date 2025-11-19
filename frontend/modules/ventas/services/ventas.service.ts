@@ -1,5 +1,5 @@
 import { ENDPOINTS } from "@/lib/endpoint/endpoints";
-import { ReportesventasResponse, VentasDto, VentasResponse } from "../type/ventas";
+import { Reportes, ReportesventasResponse, VentasDto, VentasResponse } from "../type/ventas";
 import api from "@/api/axiosInstance";
 
 export const abrirCajon = async (): Promise<void> => {
@@ -33,6 +33,28 @@ export const obtenerReporteVentas = async (fechaInicial: Date, fechaFinal: Date)
 export const obtenerReporteVentasXdia = async (): Promise<ReportesventasResponse> => {
 
     const res = await api.get(`${ENDPOINTS.build(ENDPOINTS.VENTAS.REPORTE_VENTAS_DIA)}`);
+
+    return res.data;
+}
+export const obtenerReporteVentasDiarias = async (fechaInicial: Date, fechaFinal: Date): Promise<Reportes> => {
+
+    const res = await api.get(`${ENDPOINTS.build(ENDPOINTS.VENTAS.REPORTE_VENTAS_X_DIA)}`, {
+        params: {
+            fechaInicial: fechaInicial.toISOString().split('T')[0],
+            fechaFinal: fechaFinal.toISOString().split('T')[0],
+        }
+    });
+
+    return res.data;
+}
+
+export const obtenerReporteVentasMensual = async (year: string): Promise<Reportes> => {
+
+    const res = await api.get(`${ENDPOINTS.build(ENDPOINTS.VENTAS.REPORTE_VENTAS_MENSUAL)}`, {
+        params: {
+            year,
+        }
+    });
 
     return res.data;
 }

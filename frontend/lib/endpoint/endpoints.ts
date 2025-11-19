@@ -22,8 +22,9 @@ export enum CAJON_ENDPOINT {
 export enum VENTAS_ENDPOINT{
   CREAR_VENTAS ='/ventas',
   REPORTE_VENTAS = '/ventas',
-  REPORTE_VENTAS_DIA = '/ventas/dia'
-
+  REPORTE_VENTAS_DIA = '/ventas/dia',
+  REPORTE_VENTAS_MENSUAL = '/ventas/reportes/grafica-mensual',
+  REPORTE_VENTAS_X_DIA = '/ventas/reportes/grafica-diaria'
 }
 
 

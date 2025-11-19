@@ -26,10 +26,10 @@ export class Productos {
   @Column()
   cantidad: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'int'})
   precio: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({ type: 'int' })
   costo: number;
 
   @Column({ default: 0 })

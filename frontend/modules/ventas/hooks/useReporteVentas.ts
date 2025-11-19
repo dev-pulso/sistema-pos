@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
-import { obtenerReporteVentas, obtenerReporteVentasXdia } from "../services/ventas.service"
+import { obtenerReporteVentas, obtenerReporteVentasDiarias, obtenerReporteVentasMensual, obtenerReporteVentasXdia } from "../services/ventas.service"
+import { Reportes } from "../type/ventas"
 
 export const useReporteVentas = (fechaInicial: Date, fechaFinal: Date) => {
     return useQuery({
@@ -17,6 +18,27 @@ export const useResportesXdia = () => {
     return useQuery({
         queryKey: ['reporteVentasXDia'],
         queryFn: obtenerReporteVentasXdia,
+        refetchOnWindowFocus: false,
+        staleTime: 1000 * 60 * 5,
+        retry: 1,
+        retryDelay: 1000
+    })
+}
+
+export const useResportesMensual = (year: string) => {
+    return useQuery<Reportes, Error>({
+        queryKey: ['reporteVentasMensual'],
+        queryFn: () => obtenerReporteVentasMensual(year),
+        refetchOnWindowFocus: false,
+        staleTime: 1000 * 60 * 5,
+        retry: 1,
+        retryDelay: 1000
+    })
+}
+export const useResportesDiarias = ( fechaInicial: Date, fechaFinal: Date) => {
+    return useQuery<Reportes, Error>({
+        queryKey: ['reporteVentasDiarias'],
+        queryFn: () => obtenerReporteVentasDiarias(fechaInicial, fechaFinal),
         refetchOnWindowFocus: false,
         staleTime: 1000 * 60 * 5,
         retry: 1,

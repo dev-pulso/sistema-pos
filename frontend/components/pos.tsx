@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
-import { SearchIcon, ShoppingCart, Trash2, X } from "lucide-react"
+import { Check, SearchIcon, ShoppingCart, Trash2, X } from "lucide-react"
 import { Badge } from "./ui/badge"
 import { formatCurrency, formatNumberInputCOP, sleep } from "@/lib/utils"
 import { Separator } from "./ui/separator"
@@ -40,6 +40,8 @@ import { DetalleVentas, VentasDto } from "@/modules/ventas/type/ventas"
 import useVentas from "@/modules/ventas/hooks/useVentas"
 import { toast } from "sonner"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group"
+import { Checkbox } from "./ui/checkbox"
+import { useAuthStore } from "@/store/auth.store"
 
 
 interface CartItem extends Productos {
@@ -50,23 +52,28 @@ interface CartItem extends Productos {
 
 export default function POS() {
     const [barcode, setBarcode] = useState("")
+    const [searchResults, setSearchResults] = useState<Productos[]>([]);
     const [cart, setCart] = useState<CartItem[]>([])
     const [selectedProduct, setSelectedProduct] = useState<Productos | null>(null)
     const [cantidad, setCantidad] = useState("1")
     const [isEditingQuantity, setIsEditingQuantity] = useState(false)
+    const [editingQuantities, setEditingQuantities] = useState<Record<string | number, string>>({});
     const [descuento, setDescuento] = useState(0)
     const [cashReceived, setCashReceived] = useState("")
     const [unidadMedida, setUnidadMedida] = useState("unidad")
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [imprimirTicket, setImprimirTicket] = useState(false)
     const { productos } = useProductos()
     const { setProductos, productos: productosStore } = useProductoStore()
     const { mutationVentas } = useVentas()
+    const { user } = useAuthStore()
     const scanTimeout = useRef<NodeJS.Timeout>();
     const inputRef = useRef<HTMLInputElement>(null)
 
 
 
     useEffect(() => {
+        if (productosStore.length > 0) setSearchResults(productosStore)
         if (productos.length > 0) setProductos(productos)
         if (!isEditingQuantity && inputRef.current) {
             inputRef.current.focus()
@@ -85,6 +92,10 @@ export default function POS() {
     // Escaneo o entrada manual
     const handleScan = (val: string) => {
 
+        //determinamos si es numero o string
+        const isNumber = /^\d+$/.test(val)
+        const isString = /^[a-zA-Z\s]+$/.test(val)
+
         const value = val.trim()
         setBarcode(value)
 
@@ -95,12 +106,20 @@ export default function POS() {
         scanTimeout.current = setTimeout(() => {
             const code = value.trim()
 
-            const product = productosStore.find(p => p.barcode === code)
+            let product = null
+            if (isNumber) {
+                product = productosStore.find(p => p.barcode === code)
+                if (code.length > 0 && product) {
+                    handleAddProduct(product)
+                    setBarcode("") // limpia el input
+                }
+            } else if (isString) {
+                const match = productosStore.find(p => p.nombre.toLowerCase().includes(code.toLowerCase()))
 
-            if (code.length > 0 && product) {
-                handleAddProduct(product)
-                setBarcode("") // limpia el input
+                setSearchResults(match ? [match] : [])
             }
+
+
         }, 200)
 
     }
@@ -263,7 +282,9 @@ export default function POS() {
         const nuevaVenta: VentasDto = {
             detalles: newDetalleVenta,
             total: total,
-            cashRecibido: cashAmount
+            cashRecibido: cashAmount,
+            imprimirFactura: imprimirTicket,
+            usuario: user?.nombres || ""
         }
 
         mutationVentas.mutate(nuevaVenta, {
@@ -275,9 +296,11 @@ export default function POS() {
                 subtotal = 0
                 setCashReceived('')
             },
-            onError(error) {
-                toast.error('error', {
-                    description: error.message
+            onError(error: any) {
+                const errorMessage = error.response?.data?.message || 'Error desconocido';
+                
+                toast.error('Error al registrar venta', {
+                    description: errorMessage
                 })
 
             },
@@ -305,7 +328,7 @@ export default function POS() {
                     className="text-lg p-3 mb-4"
                 /> */}
                 <InputGroup className="text-lg p-3 mb-4">
-                    <InputGroupInput placeholder="Buscar..." autoFocus
+                    <InputGroupInput placeholder="Buscar por nombre o código de barras..." autoFocus
                         value={barcode}
                         onChange={async (e) => {
                             const value = e.target.value
@@ -314,7 +337,7 @@ export default function POS() {
                     <InputGroupAddon>
                         <SearchIcon />
                     </InputGroupAddon>
-                    <InputGroupAddon align="inline-end">
+                    <InputGroupAddon align="inline-end" onClick={() => setBarcode('')} className="cursor-pointer">
                         <X />
                     </InputGroupAddon>
                 </InputGroup>
@@ -385,29 +408,87 @@ export default function POS() {
                                     {!item.pesoEnGramos && (
                                         <>
                                             <button
-                                                onClick={() => updateCart(item, item.cantidad - 1)}
+                                                onClick={() => {
+                                                    const newCantidad = item.cantidad - 1;
+                                                    if (newCantidad < 1) return;
+                                                    updateCart(item, newCantidad);
+                                                    setEditingQuantities((prev) => ({
+                                                        ...prev,
+                                                        [item.id]: String(newCantidad),
+                                                    }));
+                                                }}
                                                 disabled={item.cantidad <= 1}
                                                 className="px-2 py-1 border rounded text-gray-600 hover:bg-gray-100"
-                                            >–</button>
+                                            >
+                                                –
+                                            </button>
 
                                             <Input
                                                 type="number"
                                                 min="1"
-                                                onFocus={() => setIsEditingQuantity(true)}
-                                                onBlur={() => setIsEditingQuantity(false)}
-                                                value={item.cantidad}
-                                                onChange={(e) => {
-                                                    const val = parseFloat(e.target.value)
-                                                    if (!isNaN(val) && val >= 1) {
-                                                        updateCart(item, val)
+                                                value={editingQuantities[item.id] ?? String(item.cantidad)}
+                                                className="w-16 text-center"
+                                                onFocus={() => {
+                                                    setIsEditingQuantity(true);
+                                                    // si aún no hay valor en edición, inicializar con la cantidad actual
+                                                    setEditingQuantities((prev) => ({
+                                                        ...prev,
+                                                        [item.id]: prev[item.id] ?? String(item.cantidad),
+                                                    }));
+                                                }}
+                                                onBlur={() => {
+                                                    setIsEditingQuantity(false);
+
+                                                    // al salir del input, normalizamos el valor
+                                                    const raw = editingQuantities[item.id] ?? String(item.cantidad);
+                                                    const parsed = parseInt(raw, 10);
+
+                                                    if (isNaN(parsed) || parsed < 1) {
+                                                        // si está vacío o es inválido, volvemos al valor actual (>=1)
+                                                        const safeCantidad = item.cantidad || 1;
+                                                        setEditingQuantities((prev) => ({
+                                                            ...prev,
+                                                            [item.id]: String(safeCantidad),
+                                                        }));
+                                                        updateCart(item, safeCantidad);
+                                                    } else {
+                                                        updateCart(item, parsed);
+                                                        setEditingQuantities((prev) => ({
+                                                            ...prev,
+                                                            [item.id]: String(parsed),
+                                                        }));
                                                     }
                                                 }}
-                                                className="w-16 text-center"
+                                                onChange={(e) => {
+                                                    const value = e.target.value;
+
+                                                    // permitimos vacío para que el usuario pueda borrar y reescribir
+                                                    setEditingQuantities((prev) => ({
+                                                        ...prev,
+                                                        [item.id]: value,
+                                                    }));
+
+                                                    // actualizar en tiempo real solo cuando el valor es válido
+                                                    const parsed = parseInt(value, 10);
+                                                    if (!isNaN(parsed) && parsed >= 1) {
+                                                        updateCart(item, parsed);
+                                                    }
+                                                }}
                                             />
+
                                             <button
-                                                onClick={() => updateCart(item, item.cantidad + 1)}
+                                                onClick={() => {
+                                                    const newCantidad = item.cantidad + 1;
+                                                    updateCart(item, newCantidad);
+                                                    setEditingQuantities((prev) => ({
+                                                        ...prev,
+                                                        [item.id]: String(newCantidad),
+                                                    }));
+                                                }}
                                                 className="px-2 py-1 border rounded text-gray-600 hover:bg-gray-100"
-                                            >+</button>
+                                            >
+                                                +
+                                            </button>
                                         </>)}
                                     <button
                                         onClick={() => removeFromCart(item.id)}
@@ -448,6 +529,10 @@ export default function POS() {
                             <span className="text-lg font-semibold text-foreground">Total</span>
                             <span className="text-2xl font-bold text-foreground">{formatCurrency(total)}</span>
                         </div>
+                        <div className="flex justify-between">
+                            <span className="text-sm font-semibold text-foreground">Imprimir Ticket</span>
+                            <Checkbox checked={imprimirTicket} onCheckedChange={() => setImprimirTicket((prev) => !prev)} />
+                        </div>
                         <div className="space-y-2">
                             <div className="flex justify-between items-center text-sm">
 
@@ -475,7 +560,7 @@ export default function POS() {
 
                         </div>
                     </div>
-                    <Button onClick={handleVentas} className="mt-4 w-full">Cobrar ${total.toLocaleString()}</Button>
+                    <Button disabled={cart.length === 0} onClick={handleVentas} className="mt-4 w-full cursor-pointer">Cobrar ${total.toLocaleString()}</Button>
                 </div>
             </div>
 

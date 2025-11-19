@@ -1,4 +1,4 @@
-import { IsArray, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class DetalleVentaDto {
@@ -37,4 +37,10 @@ export class CreateVentaDto {
     @IsNumber()
     @IsNotEmpty()
     cashRecibido: number;
+
+    @IsBoolean()
+    imprimirFactura: boolean;
+
+    @IsString()
+    usuario: string;
 }

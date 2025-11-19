@@ -5,7 +5,7 @@ import { Repository } from "typeorm";
 import { CrearProductDto } from "./dto/productos.dto";
 import { Categorias } from "src/categorias/entities/categoria.entity";
 import { v4 as uuid } from 'uuid';
-import { BarcodeAlreadyExistsException, CategoriaNotFoundException, CreacionProductoException, InvalidPrecioException, ProductoNotFoundException } from "./exceptions/productos.exeption";
+import { BarcodeAlreadyExistsException, CategoriaNotFoundException, CreacionProductoException, InvalidCostoException, InvalidPrecioException, ProductoNotFoundException } from "./exceptions/productos.exeption";
 
 @Injectable()
 export class ProductsService {
@@ -58,6 +58,10 @@ export class ProductsService {
             // ✅ 1. Validar precio (validación adicional por si acaso)
             await this.validarPrecio(producto.precio);
 
+
+            // ✅ 1.5 Validar costo
+            await this.validarcosto(producto.costo);
+
             // ✅ 2. Validar y obtener categoría
             const categoria = await this.validarCategoria(producto.categoriaId);
 
@@ -69,6 +73,7 @@ export class ProductsService {
             // ✅ 4. Crear la entidad del producto
             const newProducto = this.productsRepository.create({
                 ...producto,
+                costo: Number(producto.costo),
                 categoria,
             });
 
@@ -88,11 +93,19 @@ export class ProductsService {
             if (producto.stock == null) {
                 newProducto.stock = 0;
             }
+            if (producto.costo) {
+                newProducto.costo = Number(producto.costo);
+            }
 
             // ✅ 8. Guardar el producto
-            const productoGuardado = await this.productsRepository.save(newProducto);
+            const productoGuardado = await this.productsRepository.save({
+                ...newProducto,
+                costo: producto.costo ? Number(producto.costo) : undefined
+            });
+            
 
             this.logger.log(`Producto creado exitosamente con ID: ${productoGuardado.id}`);
+            this.logger.log(`Producto guardado:`, productoGuardado);
             return productoGuardado;
 
         } catch (error) {
@@ -102,7 +115,8 @@ export class ProductsService {
             if (error instanceof BadRequestException ||
                 error instanceof BarcodeAlreadyExistsException ||
                 error instanceof CategoriaNotFoundException ||
-                error instanceof InvalidPrecioException) {
+                error instanceof InvalidPrecioException ||
+                error instanceof InvalidCostoException) {
                 throw error;
             }
 
@@ -113,6 +127,11 @@ export class ProductsService {
     private async validarPrecio(precio: number): Promise<void> {
         if (precio <= 0) {
             throw new InvalidPrecioException(precio);
+        }
+    }
+    private async validarcosto(costo: number): Promise<void> {
+        if (costo <= 0) {
+            throw new InvalidCostoException(costo);
         }
     }
     private async validarCategoria(categoriaId: string): Promise<Categorias> {
@@ -246,7 +265,7 @@ export class ProductsService {
             if (producto.barcode && producto.barcode !== productoActual.barcode) {
                 await this.validarBarcodeUnico(producto.barcode);
             }
-            
+
 
             // ✅ 6. Validar stock no negativo
             if (producto.stock !== undefined && producto.stock < 0) {

@@ -63,7 +63,7 @@ export default function VentasCard({reporteVentas}: VentaProps) {
             <Dialog open={!!ventaSeleccionada} onOpenChange={() => setVentaSeleccionada(null)}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Detalle de la Venta #{ventaSeleccionada?.id}</DialogTitle>
+                        <DialogTitle>Detalle de la Venta</DialogTitle>
                         <DialogDescription>
                             Realizada por <span className="font-semibold">{ventaSeleccionada?.vendidoPor}</span>
                             <br />
