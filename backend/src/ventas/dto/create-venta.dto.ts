@@ -16,12 +16,12 @@ export class DetalleVentaDto {
 
     @IsNumber()
     @IsNotEmpty()
-    precioUnitario: number; 
+    precioUnitario: number;
 
     @IsNumber()
     @IsNotEmpty()
     subtotal: number;
-    
+
 }
 
 export class CreateVentaDto {
@@ -43,4 +43,10 @@ export class CreateVentaDto {
 
     @IsString()
     usuario: string;
+
+    @IsNumber()
+    descuento: number;
+
+    @IsNumber()
+    subtotal: number;
 }

@@ -46,11 +46,6 @@ const formSchema = z.object({
             invalid_type_error: "El stock debe ser numérico",
         })
         .min(0, { message: "El stock debe ser mayor o igual a 0" }),
-    cantidad: z
-        .number({
-            invalid_type_error: "La cantidad debe ser numérica",
-        })
-        .min(0, { message: "La cantidad debe ser mayor o igual a 0" }),
     precio: z
         .string()
         .min(1, { message: "El precio es requerido" }),
@@ -89,7 +84,7 @@ export default function DialogProducto({
     const [isLoading, setIsLoading] = useState(false);
     const [value, setValue] = useState("");
 
-    const { categorias: dataCategorias, mutation } = useCategorias();
+    const { dataCategorias, mutation } = useCategorias();
     const { mutationProducto, mutationActualizarProducto } = useProductos();
     const productoStore = useProductoStore();
     const queryClient = useQueryClient();
@@ -98,7 +93,6 @@ export default function DialogProducto({
         defaultValues: {
             nombre: "",
             barcode: "",
-            cantidad: 0,
             precio: "",
             costo: "",
             categoria: { id: "", nombre: "" },
@@ -115,7 +109,6 @@ export default function DialogProducto({
             form.reset({
                 nombre: editingProduct.nombre || "",
                 barcode: editingProduct.barcode || "",
-                cantidad: editingProduct.cantidad || 0,
                 // mostramos formateado en el input
                 precio: formatNumberInputCOP(String(editingProduct.precio ?? 0)),
                 costo: formatNumberInputCOP(String(editingProduct.costo ?? 0)),
@@ -132,7 +125,6 @@ export default function DialogProducto({
             form.reset({
                 nombre: "",
                 barcode: "",
-                cantidad: 0,
                 precio: "",
                 costo: "",
                 categoria: { id: "", nombre: "" },
@@ -153,7 +145,7 @@ export default function DialogProducto({
             {
                 onSuccess: (data) => {
                     toast.success("Categoría creada con éxito");
-                    setCategorias((prev) => [...(prev || []), data]);
+                    queryClient.invalidateQueries({ queryKey: ["categorias"] });
                     field.onChange({ id: data.id, nombre: data.nombre });
 
                     setValue(data.nombre);
@@ -181,7 +173,7 @@ export default function DialogProducto({
         const costoNumber = parseCOPToNumber(data.costo);
         const precioNumber = parseCOPToNumber(data.precio);
 
-        if (editingProduct) {           
+        if (editingProduct) {
 
             // 🔹 EDITAR
             const productoEditado: ProductoDto = {
@@ -191,7 +183,6 @@ export default function DialogProducto({
                 categoriaId: data.categoria.id,
                 unidadMedida: data.unidadMedida,
                 stock: data.unidadMedida === 'kg' ? convertirKgAGramos(data.stock) : data.stock,
-                cantidad: data.cantidad,
                 costo: costoNumber,
                 precio: precioNumber,
             };
@@ -211,7 +202,6 @@ export default function DialogProducto({
                         descripcion: resp.descripcion,
                         sku: resp.sku,
                         unidadMedida: resp.unidadMedida,
-                        cantidad: resp.cantidad,
                         isActive: resp.isActive,
                         categoria: resp.categoria,
                         createdAt: resp.createdAt,
@@ -248,7 +238,6 @@ export default function DialogProducto({
                 categoriaId: data.categoria.id,
                 unidadMedida: data.unidadMedida,
                 stock: stock,
-                cantidad: data.cantidad,
                 costo: costoNumber,
                 precio: precioNumber,
             };
@@ -267,7 +256,6 @@ export default function DialogProducto({
                         descripcion: resp.descripcion,
                         sku: resp.sku,
                         unidadMedida: resp.unidadMedida,
-                        cantidad: resp.unidadMedida === 'kg' ? convertirKgAGramos(resp.cantidad) : resp.cantidad,
                         isActive: resp.isActive,
                         categoria: resp.categoria,
                         createdAt: resp.createdAt,
@@ -305,9 +293,6 @@ export default function DialogProducto({
         }
     }
 
-    useEffect(() => {
-        setCategorias(dataCategorias);
-    }, [dataCategorias]);
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -416,7 +401,7 @@ export default function DialogProducto({
                                                             <CommandList>
                                                                 <CommandEmpty>No se encuentra la categoría</CommandEmpty>
                                                                 <CommandGroup>
-                                                                    {categorias?.map((cate) => (
+                                                                    {dataCategorias?.map((cate) => (
                                                                         <CommandItem
                                                                             key={cate.id}
                                                                             value={cate.nombre}
@@ -484,31 +469,6 @@ export default function DialogProducto({
                                             <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                                                 <Hash className="w-4 h-4" />
                                                 Stock Disponible
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    value={field.value ?? 0}
-                                                    onChange={(e) => {
-                                                        const num = Number(e.target.value.replace(/[^\d]/g, "")) || 0;
-                                                        field.onChange(num);
-                                                    }}
-                                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
-                                                    placeholder="Ej: 100"
-                                                />
-                                            </FormControl>
-                                        </FormItem>
-                                    )}
-                                />
-
-                                {/* CANTIDAD */}
-                                <FormField
-                                    control={form.control}
-                                    name="cantidad"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                                                <Layers className="w-4 h-4" />
-                                                Cantidad por Unidad
                                             </FormLabel>
                                             <FormControl>
                                                 <Input

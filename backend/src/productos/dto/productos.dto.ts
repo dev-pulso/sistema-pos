@@ -13,7 +13,7 @@ export class CrearProductDto {
   @IsString({ message: 'El nombre debe ser un texto' })
   @MinLength(3, { message: 'El nombre debe tener al menos 3 caracteres' })
   @MaxLength(100, { message: 'El nombre no puede exceder 100 caracteres' })
-  nombre: string;  
+  nombre: string;
 
   @IsNotEmpty({ message: 'El precio es requerido' })
   @IsNumber({}, { message: 'El precio debe ser un número' })
@@ -38,9 +38,6 @@ export class CrearProductDto {
   @IsString({ message: 'El SKU debe ser un texto' })
   @MaxLength(50, { message: 'El SKU no puede exceder 50 caracteres' })
   sku?: string;
-
-  @IsNumber()
-  cantidad: number;
 
   @IsNumber()
   @IsOptional()

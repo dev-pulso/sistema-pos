@@ -23,10 +23,7 @@ export class Productos {
   @Column({ type: 'varchar', length: 30 })
   unidadMedida: string;
 
-  @Column()
-  cantidad: number;
-
-  @Column({ type: 'int'})
+  @Column({ type: 'int' })
   precio: number;
 
   @Column({ type: 'int' })

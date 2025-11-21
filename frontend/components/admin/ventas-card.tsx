@@ -5,12 +5,14 @@ import { useResportesXdia } from "@/modules/ventas/hooks/useReporteVentas";
 import { formatCurrency } from "@/lib/utils";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog";
 import { ReportesventasResponse } from "@/modules/ventas/type/ventas";
-interface VentaProps{
+interface VentaProps {
     reporteVentas: ReportesventasResponse;
 }
-export default function VentasCard({reporteVentas}: VentaProps) {
+export default function VentasCard({ reporteVentas }: VentaProps) {
     const [ventaSeleccionada, setVentaSeleccionada] = useState<any>(null);
     const data = reporteVentas
+    console.log(data);
+
 
 
     return (
@@ -81,9 +83,19 @@ export default function VentasCard({reporteVentas}: VentaProps) {
                     </div>
 
                     <DialogFooter>
-                        <div className="w-full flex justify-between items-center pt-4 border-t">
-                            <span className="font-semibold text-lg">Total:</span>
-                            <span className="font-bold text-lg">{formatCurrency(Number(ventaSeleccionada?.total))}</span>
+                        <div className="w-full flex flex-col justify-between items-center pt-4 border-t">
+                            <div className="w-full flex justify-between items-center pt-4 border-t">
+                                <span className="font-semibold text-lg">Subtotal:</span>
+                                <span className="font-bold text-lg">{ventaSeleccionada?.subtotal ? formatCurrency(Number(ventaSeleccionada?.subtotal)) : '0'}</span>
+                            </div>
+                            <div className="w-full flex justify-between items-center pt-4 border-t">
+                                <span className="font-semibold text-lg">Descuento:</span>
+                                <span className="font-bold text-lg">{ventaSeleccionada?.descuentoTotal ? formatCurrency(Number(ventaSeleccionada?.descuentoTotal)) : '0'}</span>
+                            </div>
+                            <div className="w-full flex justify-between items-center pt-4 border-t">
+                                <span className="font-semibold text-lg">Total:</span>
+                                <span className="font-bold text-lg">{formatCurrency(Number(ventaSeleccionada?.total))}</span>
+                            </div>
                         </div>
                     </DialogFooter>
                 </DialogContent>

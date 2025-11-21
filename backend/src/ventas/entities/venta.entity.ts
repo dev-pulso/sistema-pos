@@ -8,7 +8,13 @@ export class Venta {
     id: string;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
-    total: number;        
+    total: number;
+
+    @Column({ type: 'int', nullable: true })
+    descuento: number;
+
+    @Column({ type: 'int', nullable: true })
+    subtotal: number;
 
     @OneToMany(() => DetalleVenta, detalle => detalle.venta, { cascade: true })
     detalles: DetalleVenta[];

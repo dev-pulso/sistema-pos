@@ -7,7 +7,6 @@ export interface ProductoDto {
     nombre: string;
     barcode: string;
     unidadMedida: UnidadMedida;
-    cantidad: number;
     descripcion?: string;
     precio: number;
     costo: number;
@@ -22,7 +21,6 @@ export interface ProductoResponse {
     descripcion: string;
     sku: string;
     unidadMedida: UnidadMedida;
-    cantidad: number;
     precio: number;
     costo: number;
     stock: number;

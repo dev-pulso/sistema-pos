@@ -34,6 +34,11 @@ import LogoMascotas from '../public/img/mascotas.png'
 import LogoAseo from '../public/img/aseo.png'
 import LogoAceites from '../public/img/aceites.png'
 import LogoFruver from '../public/img/fruver.png'
+import LogoALimentos from '../public/img/alimentos.png'
+import LogoCondimentos from '../public/img/condimentos.png'
+import LogoPastas from '../public/img/pasta.png'
+
+
 import useDebounce from "@/lib/customHooks/use-debounce-time"
 import { abrirCajon } from "@/modules/ventas/services/ventas.service"
 import { DetalleVentas, VentasDto } from "@/modules/ventas/type/ventas"
@@ -42,6 +47,7 @@ import { toast } from "sonner"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group"
 import { Checkbox } from "./ui/checkbox"
 import { useAuthStore } from "@/store/auth.store"
+import { useQueryClient } from "@tanstack/react-query"
 
 
 interface CartItem extends Productos {
@@ -69,6 +75,7 @@ export default function POS() {
     const { user } = useAuthStore()
     const scanTimeout = useRef<NodeJS.Timeout>();
     const inputRef = useRef<HTMLInputElement>(null)
+    const queryClient = useQueryClient()
 
 
 
@@ -229,7 +236,9 @@ export default function POS() {
             case "Aceites": return LogoAceites
             case "Verduras": return LogoFruver
             case "Frutas": return LogoFruver
-            default: return LogoBebidas
+            case "Condimentos": return LogoCondimentos
+            case "Pastas": return LogoPastas
+            default: return LogoALimentos
         }
     }
 
@@ -282,23 +291,27 @@ export default function POS() {
         const nuevaVenta: VentasDto = {
             detalles: newDetalleVenta,
             total: total,
+            subtotal: subtotal,
             cashRecibido: cashAmount,
             imprimirFactura: imprimirTicket,
-            usuario: user?.nombres || ""
+            usuario: user?.nombres || "",
+            descuento: discount || 0
         }
 
         mutationVentas.mutate(nuevaVenta, {
             onSuccess() {
-                abrirCajon()
                 toast.success('Se registro la venta')
                 setCart([])
                 total = 0
                 subtotal = 0
                 setCashReceived('')
+                queryClient.invalidateQueries({
+                    queryKey: ['reporteVentasXDia'],
+                })
             },
             onError(error: any) {
                 const errorMessage = error.response?.data?.message || 'Error desconocido';
-                
+
                 toast.error('Error al registrar venta', {
                     description: errorMessage
                 })
@@ -560,7 +573,7 @@ export default function POS() {
 
                         </div>
                     </div>
-                    <Button disabled={cart.length === 0} onClick={handleVentas} className="mt-4 w-full cursor-pointer">Cobrar ${total.toLocaleString()}</Button>
+                    <Button disabled={cart.length === 0 && cashAmount === 0} onClick={handleVentas} className="mt-4 w-full cursor-pointer">Cobrar {formatCurrency(total)}</Button>
                 </div>
             </div>
 

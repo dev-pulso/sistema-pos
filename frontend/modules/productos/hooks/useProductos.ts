@@ -37,14 +37,13 @@ export default function useProductos() {
             descripcion: p.descripcion,
             sku: p.sku,
             unidadMedida: p.unidadMedida,
-            cantidad: p.cantidad,
             isActive: p.isActive,
             categoria: p.categoria,
             createdAt: p.createdAt,
             updatedAt: p.updatedAt,
         }));
     }, [data])
-    
+
 
     return {
         productos,

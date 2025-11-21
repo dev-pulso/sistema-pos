@@ -17,7 +17,6 @@ export const createProducto = async (data: ProductoDto): Promise<ProductoRespons
             categoriaId: data.categoriaId,
             barcode: data.barcode,
             unidadMedida: data.unidadMedida,
-            cantidad: Number(data.cantidad),
             costo: Number(data.costo),
         }
 
@@ -40,7 +39,6 @@ export const updateProducto = async (data: ProductoDto): Promise<ProductoRespons
             categoriaId: data.categoriaId,
             barcode: data.barcode,
             unidadMedida: data.unidadMedida,
-            cantidad: Number(data.cantidad),
             costo: Number(data.costo),
         }
 

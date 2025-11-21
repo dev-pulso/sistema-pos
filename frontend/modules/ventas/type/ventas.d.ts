@@ -4,6 +4,8 @@ export interface VentasDto {
     cashRecibido: number
     imprimirFactura: boolean
     usuario: string
+    descuento: number
+    subtotal: number
 }
 export interface DetalleVentas {
     productoId: string;
@@ -28,6 +30,8 @@ export interface ReportesventasResponse {
     montoTotal: number;
     productosVendidos: ProductosVendido[];
     ventas: Venta[];
+    gananciaTotal: number;
+    descuentoTotal: number;
 }
 
 export interface ProductosVendido {
@@ -41,6 +45,8 @@ export interface Venta {
     id: string;
     fecha: Date;
     total: string;
+    subtotal: string;
+    descuentoTotal: string;
     vendidoPor: string;
     detalles: Detalle[];
 }

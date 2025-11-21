@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CategoriaDto, CategoriaResponse } from "../types/categoria";
 import { createCategoria, getCategorias } from "../services/categorias.service";
+import { useMemo } from "react";
 
 export const useCategorias = () => {
 
@@ -13,12 +14,14 @@ export const useCategorias = () => {
   const mutation = useMutation<CategoriaResponse, Error, CategoriaDto>({
     mutationFn: createCategoria,
   });
-  
 
- return {
-    categorias: data || [],
+  const dataCategorias = useMemo(() => data || [], [data]);
+
+
+  return {
+    dataCategorias,
     isLoading,
     error,
     mutation,
- }
+  }
 };

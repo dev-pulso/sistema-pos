@@ -20,7 +20,7 @@ import { useTheme } from "next-themes";
 
 export function POSHeader() {
   const { user, logout } = useAuthStore();
-   const { setTheme, theme } = useTheme()
+  const { setTheme, theme } = useTheme()
   const router = useRouter();
   const [rol, setRol] = useState('')
 
@@ -67,7 +67,7 @@ export function POSHeader() {
           <Vegan className="h-8 w-8 text-primary" />
         </div>
         <div>
-          <h1 className="text-lg font-semibold leading-none text-foreground">Granero el Oriente</h1>
+          <h1 className="text-lg font-semibold leading-none text-foreground">Tienda Oriental</h1>
           <p className="text-sm text-muted-foreground">Sistema de Punto de Venta</p>
         </div>
       </div>

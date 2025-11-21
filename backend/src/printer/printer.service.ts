@@ -200,16 +200,37 @@ export interface TicketItem {
   nombre: string;
   cantidad: number;
   precioUnitario: number;
+  total: number;
 }
 
 export interface PrintTicketPayload {
-  numero: string;          // Nº de venta / factura
-  fecha: string;           // string legible: '2025-11-17 11:45'
-  cliente?: string;        // opcional
+  nombreEmpresa?: string;
+  slogan?: string;
+  direccion?: string;
+  telefono?: string;
+  nit?: string;
+
+  resolucion?: string;
+  numero: string;
+  fecha: string;
+  cajero?: string;
+  cliente?: string;
+  cc?: string;
+
   items: TicketItem[];
+
+  subtotal?: number;
+  descuento?: number;
+  impuesto?: number;
   total: number;
-  pago?: number;           // efectivo entregado (opcional)
-  cambio?: number;         // cambio devuelto (opcional)
+
+  formaPago?: string;
+  recibido?: number;
+  cambio?: number;
+
+  mensajeFinal?: string;
+  mensajeFinal2?: string;
+  infoLegal?: string;
 }
 
 @Injectable()
@@ -229,6 +250,7 @@ export class PrinterService {
     } catch (error) {
       this.logger.error('Error enviando ticket al Print Agent', error);
       // aquí decides si lanzar excepción o solo loguear
+      throw error;
     }
   }
 

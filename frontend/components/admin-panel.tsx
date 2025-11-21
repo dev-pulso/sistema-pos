@@ -20,13 +20,21 @@ import VentasCard from "./admin/ventas-card"
 import { useResportesXdia } from "@/modules/ventas/hooks/useReporteVentas"
 import { formatCurrency } from "@/lib/utils"
 import { SalesDashboard } from "./sales-dashboard"
+import { useQueryClient } from "@tanstack/react-query"
 
 
 export function AdminPanel() {
   const [editingProduct, setEditingProduct] = useState<Productos | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const { productos, setProductos } = useProductoStore()
-  const data = useResportesXdia()
+  const { data } = useResportesXdia()
+
+  console.log(data);
+
+  const queryClient = useQueryClient()
+
+
+
 
   // Estadísticas
   const totalSales = 0//sampleSales.reduce((sum, sale) => sum + sale.total, 0)
@@ -61,14 +69,14 @@ export function AdminPanel() {
 
       <div className="container mx-auto px-4 py-6">
         {/* Estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">Ventas del Día</CardTitle>
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(data.data?.montoTotal || 0)}</div>
+              <div className="text-2xl font-bold">{formatCurrency(data?.montoTotal || 0)}</div>
             </CardContent>
           </Card>
           <Card>
@@ -77,7 +85,7 @@ export function AdminPanel() {
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{data.data?.totalVentas || 0}</div>
+              <div className="text-2xl font-bold">{data?.totalVentas || 0}</div>
               <p className="text-xs text-muted-foreground">Hoy</p>
             </CardContent>
           </Card>
@@ -93,7 +101,17 @@ export function AdminPanel() {
             </CardContent>
           </Card>
 
-          
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">Ganancias</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{formatCurrency(data?.gananciaTotal || 0)}</div>
+            </CardContent>
+          </Card>
+
+
         </div>
 
         {/* Tabs */}
@@ -112,14 +130,12 @@ export function AdminPanel() {
 
           {/* Tab de Ventas */}
           <TabsContent value="sales" className="space-y-4">
-            {
-              data.data && <VentasCard reporteVentas={data.data}/>
-            }
+            <VentasCard reporteVentas={data!} />
           </TabsContent>
 
           {/* Tab de Reportes */}
           <TabsContent value="reports" className="space-y-4">
-            <SalesDashboard/>
+            <SalesDashboard />
             {/* <Card>
               <CardHeader>
                 <CardTitle>Reportes</CardTitle>

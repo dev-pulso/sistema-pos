@@ -238,18 +238,23 @@ export class VentasService {
     await queryRunner.connect();
     await queryRunner.startTransaction();
 
+    // array para el ticket
+    const itemsTicket: TicketItem[] = [];
+
     try {
       const venta = this.ventaRepository.create({
         total: createVentaDto.total,
         usuarioId,
         cashRecibido: createVentaDto.cashRecibido,
+        descuento: createVentaDto.descuento,
+        subtotal: createVentaDto.subtotal,
       });
-      let producto: TicketItem[] = [];
-      // 🔐 IMPORTANTE: guardar siempre con el manager del queryRunner dentro de la transacción
+
       await queryRunner.manager.save(venta);
 
       for (const detalle of createVentaDto.detalles) {
-        const producto = await queryRunner.manager.getRepository(Productos)
+        const producto = await queryRunner.manager
+          .getRepository(Productos)
           .findOne({ where: { id: detalle.productoId } });
 
         if (!producto) {
@@ -261,23 +266,26 @@ export class VentasService {
 
         if (cantidad <= 0 && gramos <= 0) {
           throw new BadRequestException(
-            `Debe especificar una cantidad o gramos para el producto ${producto.nombre}`
+            `Debe especificar una cantidad o gramos para el producto ${producto.nombre}`,
           );
         }
 
+        // Validar stock
         if (gramos > 0) {
           if (producto.stock < gramos) {
-            throw new BadRequestException(`Stock insuficiente para el producto ${producto.nombre}`);
+            throw new BadRequestException(
+              `Stock insuficiente para el producto ${producto.nombre}`,
+            );
           }
         } else {
           if (producto.stock < cantidad) {
-            throw new BadRequestException(`Stock insuficiente para el producto ${producto.nombre}`);
+            throw new BadRequestException(
+              `Stock insuficiente para el producto ${producto.nombre}`,
+            );
           }
         }
-        producto.nombre = producto.nombre;
-        producto.cantidad = detalle.cantidad ? detalle.cantidad : detalle.gramos;
-        producto.precio = detalle.precioUnitario;
 
+        // Crear detalle de venta
         const detalleVenta = this.detalleVentaRepository.create({
           ventaId: venta.id,
           productoId: detalle.productoId,
@@ -289,41 +297,86 @@ export class VentasService {
 
         await queryRunner.manager.save(detalleVenta);
 
+        // Actualizar stock
         producto.stock -= gramos > 0 ? gramos : cantidad;
         await queryRunner.manager.save(producto);
+
+        // 👉 Armar item para el ticket
+        itemsTicket.push({
+          nombre: producto.nombre,
+          // si vendes por gramos puedes mostrar en "cantidad" los gramos o convertir a kg
+          cantidad: cantidad > 0 ? cantidad : gramos,
+          precioUnitario: Number(detalle.precioUnitario),
+          total: Number(detalle.subtotal),
+        });
       }
-
-      if (createVentaDto.imprimirFactura) {
-
-        const payload: PrintTicketPayload = {
-          items: producto,
-          total: createVentaDto.total,
-          numero: venta.id,
-          fecha: new Date().toISOString().split("T")[0] + " " + new Date().toISOString().split("T")[1].split(".")[0],
-          cliente: createVentaDto.usuario,
-        };
-        this.printerService.imprimirTicket(payload);
-      }
-
-
 
       await queryRunner.commitTransaction();
 
-      // ya fuera de la transacción, leemos la venta completa
+      // 🧾 Después del commit, construimos el payload y mandamos a imprimir
+      if (createVentaDto.imprimirFactura) {
+        const ahora = new Date();
+        const fechaStr = `${ahora.toISOString().split('T')[0]} ${ahora.toTimeString().split(' ')[0]
+          }`;
+
+        const payload: PrintTicketPayload = {
+          // Datos de la tienda (puedes sacarlos de config, bd, etc.)
+          nombreEmpresa: 'TIENDA ORIENTAL',
+          slogan: 'Lo mejor para tu hogar',
+          direccion: 'Cl 3 CR 7-42',
+          telefono: '314 568 79 33',
+          // Datos de la venta
+          numero: venta.id,
+          fecha: fechaStr,
+          cajero: createVentaDto.usuario || 'CAJERO',
+
+          items: itemsTicket,
+
+          subtotal:
+            typeof createVentaDto.subtotal === 'number'
+              ? createVentaDto.subtotal
+              : undefined,
+          descuento:
+            typeof createVentaDto.descuento === 'number'
+              ? createVentaDto.descuento
+              : undefined,
+          total: createVentaDto.total,
+          recibido: createVentaDto.cashRecibido,
+          cambio:
+            createVentaDto.cashRecibido != null
+              ? createVentaDto.cashRecibido - createVentaDto.total
+              : undefined,
+
+          mensajeFinal: 'Gracias por su compra',
+          mensajeFinal2: '¡Vuelva pronto!',
+          infoLegal:
+            'Favor conservar este comprobante para cambios o devoluciones según política del establecimiento.',
+        };
+
+        // no bloquees la respuesta si falla la impresora
+        this.printerService
+          .imprimirTicket(payload)
+          .catch((err) => {
+            console.error('Error imprimiendo ticket (no se revierte la venta)', err);
+          });
+      }
+
+      // ya fuera de la transacción, devolvemos la venta completa
       return this.ventaRepository.findOne({
         where: { id: venta.id },
-        relations: ["detalles", "detalles.producto", "usuario"],
+        relations: ['detalles', 'detalles.producto', 'usuario'],
       });
-    } catch (error: any) {
+    } catch (error) {
       await queryRunner.rollbackTransaction();
-      console.error("Error al crear venta:", error);
+      console.error('Error al crear venta:', error);
       throw error instanceof Error
         ? error
-        : new Error("Error desconocido al crear la venta");
+        : new Error('Error desconocido al crear la venta');
     } finally {
       await queryRunner.release();
     }
   }
+
 
   async reporteVentas(fechaInicial: Date, fechaFinal: Date) {
     try {
@@ -337,14 +390,33 @@ export class VentasService {
         },
       });
 
+      let gananciaTotal = 0;
+
+      ventas.forEach((venta) => {
+        venta.descuento,
+          venta.detalles.forEach((detalle) => {
+            const producto = detalle.producto;
+            if (producto) {
+              const cantidad = Number(detalle.cantidad ?? 0);
+              const gramos = Number(detalle.gramos ?? 0);
+              const cantidadReal = gramos > 0 ? gramos : cantidad;
+              const costoTotal = Number(producto.costo ?? 0) * cantidadReal;
+              gananciaTotal += Number(producto.precio) - Number(producto.costo);
+            }
+          });
+      });
+
       const resumen = {
         totalVentas: ventas.length,
         montoTotal: ventas.reduce((sum, venta) => sum + Number(venta.total), 0),
+        gananciaTotal,
         productosVendidos: await this.obtenerProductosVendidos(ventas),
         ventas: ventas.map((venta) => ({
           id: venta.id,
           fecha: venta.createdAt,
           total: venta.total,
+          descuentoTotal: venta.descuento,
+          subtotal: venta.subtotal,
           vendidoPor: venta.usuario?.nombres,
           detalles: venta.detalles.map((detalle) => ({
             producto: detalle.producto?.nombre,
