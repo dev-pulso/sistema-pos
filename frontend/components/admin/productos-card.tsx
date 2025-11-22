@@ -107,7 +107,8 @@
 //     );
 // }
 import { useState, useEffect, useMemo } from "react";
-import { Edit, Plus, Trash2, AlertTriangle } from "lucide-react";
+import { Edit, Plus, Trash2, AlertTriangle, Download } from "lucide-react";
+import * as XLSX from "xlsx";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
@@ -175,6 +176,20 @@ export default function ProductosCard({
     });
   }, [productosState, searchTerm, showLowStockOnly]);
 
+  const handleExportExcel = () => {
+    const dataToExport = filteredProducts.map((p) => ({
+      Nombre: p.nombre,
+      Precio: formatCurrency(p.precio),
+      Categoria: p.categoria.nombre,
+      Stock: p.stock,
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Productos");
+    XLSX.writeFile(workbook, "productos.xlsx");
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -206,6 +221,11 @@ export default function ProductosCard({
                 Stock bajo (&lt; {LOW_STOCK_THRESHOLD})
               </span>
             </div>
+
+            <Button variant="outline" onClick={handleExportExcel}>
+              <Download className="h-4 w-4 mr-2" />
+              Exportar Excel
+            </Button>
 
             <Button
               onClick={() => {

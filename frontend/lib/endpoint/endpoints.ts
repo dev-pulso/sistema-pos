@@ -1,4 +1,7 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
+import { getBaseUrl } from "./baseurl";
+
+export const API_BASE = `${getBaseUrl()}/api`;
+
 
 export enum PRODUCT_ENDPOINT {
   LISTAR = "/productos",
@@ -19,8 +22,8 @@ export enum CAJON_ENDPOINT {
   ABRIR = "/cajon",
 }
 
-export enum VENTAS_ENDPOINT{
-  CREAR_VENTAS ='/ventas',
+export enum VENTAS_ENDPOINT {
+  CREAR_VENTAS = '/ventas',
   REPORTE_VENTAS = '/ventas',
   REPORTE_VENTAS_DIA = '/ventas/dia',
   REPORTE_VENTAS_MENSUAL = '/ventas/reportes/grafica-mensual',
@@ -58,6 +61,6 @@ export const ENDPOINTS = {
   USUARIO: USER_ENDPOINT,
   CATEGORIA: CATEGORY_ENDPOINT,
   CAJON: CAJON_ENDPOINT,
-  VENTAS:VENTAS_ENDPOINT,
+  VENTAS: VENTAS_ENDPOINT,
   build: buildEndpoint,
 };
