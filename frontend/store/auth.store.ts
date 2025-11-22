@@ -2,6 +2,7 @@ import { Rols } from "@/config/app.interface";
 import { User } from "@/modules/auth/types/app";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import Cookies from "js-cookie";
 
 
 interface AuthState {
@@ -21,8 +22,13 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
 
-      login: (user, token) => set({ user, token, isAuthenticated: true }),
-      logout: () => set({ user: null, token: null, isAuthenticated: false }),
+      login: (user, token) => {
+        set({ user, token, isAuthenticated: true })
+        Cookies.set("auth-storage", token, { expires: 7, sameSite: "strict" });
+      },
+      logout: () => {
+        set({ user: null, token: null, isAuthenticated: false })
+        Cookies.remove("auth-storage");},
 
       hasRole: (requiredRole) => {
         const currentRole = get().user?.rol;
@@ -33,6 +39,6 @@ export const useAuthStore = create<AuthState>()(
           : currentRole === requiredRole;
       },
     }),
-    { name: "auth-storage" } // Se guarda en localStorage
+    { name: "auth-storage" }
   )
 );

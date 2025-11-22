@@ -1,11 +1,11 @@
 import { Exclude } from "class-transformer";
-import { Ventas } from "src/ventas/entities/ventas.entity";
+import { Venta } from "src/ventas/entities/venta.entity";
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
 export enum Rols {
-    SUPER_ADMIN = 'super_admin',
-    ADMIN = 'admin',
-    CASHIER = 'cashier',
+  SUPER_ADMIN = 'super_admin',
+  ADMIN = 'admin',
+  CASHIER = 'cashier',
 }
 
 @Entity('users')
@@ -28,10 +28,10 @@ export class Users {
   @Column({ default: true })
   isActive: boolean;
 
-  @OneToMany(() => Ventas, sale => sale.user)
-  ventas: Ventas[];
-   @Column({ nullable: true })
+  @OneToMany(() => Venta, ventas => ventas.usuario)
+  ventas: Venta[];
 
+  @Column({ nullable: true })
   @Exclude()
   refreshToken: string;
 

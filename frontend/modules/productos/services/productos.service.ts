@@ -1,25 +1,55 @@
 import { ENDPOINTS } from "@/lib/endpoint/endpoints";
 import { ProductoDto, ProductoResponse } from "../types/productos";
+import api from "@/api/axiosInstance";
 
 export const getProductos = async (): Promise<ProductoResponse[]> => {
-    const response = await fetch(`${ENDPOINTS.build(ENDPOINTS.PRODUCTO.LISTAR)}`);
-    const data = await response.json();
-    return data;
+    const response = await api.get(`${ENDPOINTS.build(ENDPOINTS.PRODUCTO.LISTAR)}`);
+    return response.data;
 };
 
-export const createProducto = async (data: ProductoDto): Promise<ProductoResponse[]> => {
-    const res = await fetch(`${ENDPOINTS.build(ENDPOINTS.PRODUCTO.CREAR)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-    });
+export const createProducto = async (data: ProductoDto): Promise<ProductoResponse> => {
+    try {
+        const payload: ProductoDto = {
+            nombre: data.nombre,
+            descripcion: data.descripcion,
+            precio: Number(data.precio),
+            stock: Number(data.stock),
+            categoriaId: data.categoriaId,
+            barcode: data.barcode,
+            unidadMedida: data.unidadMedida,
+            costo: Number(data.costo),
+        }
 
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Error al crear producto");
+        const res = await api.post(`${ENDPOINTS.build(ENDPOINTS.PRODUCTO.CREAR)}`, payload);
+
+        return res.data;
+    } catch (error: any) {
+        throw error;
     }
-    return await res.json();
-};
+}
+
+export const updateProducto = async (data: ProductoDto): Promise<ProductoResponse> => {
+
+    try {
+        const payload: ProductoDto = {
+            nombre: data.nombre,
+            descripcion: data.descripcion,
+            precio: Number(data.precio),
+            stock: Number(data.stock),
+            categoriaId: data.categoriaId,
+            barcode: data.barcode,
+            unidadMedida: data.unidadMedida,
+            costo: Number(data.costo),
+        }
+
+        const res = await api.post(`${ENDPOINTS.build(ENDPOINTS.PRODUCTO.ACTUALIZAR, { id: data.id })}`, payload);
+
+        return res.data;
+    } catch (error: any) {
+        throw error;
+    }
+}
+
 
 
 

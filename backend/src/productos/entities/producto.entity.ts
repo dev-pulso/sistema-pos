@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Categorias } from 'src/categorias/entities/categoria.entity';
 
-export type UnidadMedida = 'unidad' | 'g' | 'kg' | 'ml' | 'lt';
+
 
 @Entity('productos')
 export class Productos {
@@ -20,16 +20,13 @@ export class Productos {
   @Column()
   sku: string;
 
-  @Column({ type: 'varchar', default: 'unidad' })
-  unidadMedida: UnidadMedida;
+  @Column({ type: 'varchar', length: 30 })
+  unidadMedida: string;
 
-  @Column()
-  cantidad: number;
-
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ type: 'int' })
   precio: number;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
+  @Column({ type: 'int' })
   costo: number;
 
   @Column({ default: 0 })

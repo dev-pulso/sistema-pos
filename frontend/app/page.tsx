@@ -1,11 +1,12 @@
-import { POSHeader } from "@/components/pos-header"
+import POS from "@/components/pos"
 import { POSInterface } from "@/components/pos-interface"
 
+
 export default function Home() {
+ 
   return (
-    <main className="min-h-screen bg-background">
-      <POSInterface />
-      {/* <POSHeader/> */}
+    <main className="min-h-screen ">
+      <POS/>
     </main>
   )
 }

@@ -4,7 +4,7 @@ export interface CategoriaDto {
   nombre: string;
 }
 export interface CategoriaResponse {
-  id: number;
+  id: string;
   nombre: string;
   productos: ProductoResponse[];
 }
